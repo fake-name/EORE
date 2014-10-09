@@ -1,0 +1,10 @@
+{
+    "arduino_folder": "C:\\Users\\Fake Name\\Desktop\\arduino-1.0.5-r2", 
+    "baudrate": 10, 
+    "board": 0, 
+    "full_compilation": false, 
+    "platform": 1, 
+    "platform_name": "Arduino AVR Boards", 
+    "serial_port": 0, 
+    "set_bare_gcc_only": false
+}

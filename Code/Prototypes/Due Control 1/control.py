@@ -1,0 +1,152 @@
+
+import time
+import serial
+import binascii
+import random
+
+
+SWITCH_SHUTDOWN      = 0x07
+# 0x07 puts the switch in "shutdown" state. I /assume/ this means all
+# the switches are open, but it's not definitively documented in the datasheet.
+
+HEADER    = "\x5D"
+
+PACKET_HEADER = "\x5D"
+WRITE_ATTEN_1 = "\xAA"
+WRITE_ATTEN_2 = "\xAB"
+WRITE_ATTEN_3 = "\xAC"
+WRITE_SWITCH  = "\xC0"
+
+
+class EoreController(object):
+
+
+
+	switch_power = False
+	nop_val  = 0
+
+	def __init__(self, portName):
+		self.port = serial.Serial(portName, 115200)
+
+
+	def calculateChecksum(self, instr):
+		cksum = 0
+		for char in instr:
+			cksum += ord(char)
+
+		return chr(cksum & 0xFF)
+
+	# def readSwitch(self):
+	# 	pkt = "%s%s\x00" % (HEADER, READ_CMD)
+	# 	pkt += self.calculateChecksum(pkt)
+	# 	self.port.write(pkt)
+	# 	rx = self.exhaust()
+	# 	# print("RX Packet len", len(pkt), binascii.hexlify(pkt))
+	# 	if rx:
+	# 		# print("Received response!")
+	# 		print(rx)
+
+
+	# switchChannel implicitly turns on the switch.
+	def writeSwitch(self, chan):
+		if chan > 0x07 or chan < 0x00 or chan == 0x06:
+			raise ValueError("Invalid switch channel '%s'!" % chan)
+
+		self.__sendCommand(WRITE_SWITCH, chan)
+
+
+
+	def __sendCommand(self, cmd, value):
+
+		if value > 0xFF or value < 0:
+			raise ValueError("Switch value must be a 8-bit unsigned value.")
+
+		pkt = "%s%s%s" % (HEADER, cmd, chr(value))
+		pkt += self.calculateChecksum(pkt)
+		self.port.write(pkt)
+		time.sleep(0.05)
+		rx = self.exhaust()
+		if rx:
+			print(rx)
+
+	# Read all data in the rx buffer.
+	def exhaust(self):
+		ret = ""
+		while self.port.inWaiting():
+			ret += self.port.read()
+		return ret.strip()
+
+
+	def writeAtten(self, atten, value):
+		if value > 31.5 or value < 00:
+			raise ValueError("Valid values 31.5 dB to 0 dB. Specified: '%s'!" % value)
+
+		value = int(value*2+0.5)  # Round to nearest value
+
+		if atten == 0:
+			self.__sendCommand(WRITE_ATTEN_1, value)
+		elif atten == 1:
+			self.__sendCommand(WRITE_ATTEN_2, value)
+		elif atten == 2:
+			self.__sendCommand(WRITE_ATTEN_3, value)
+		else:
+			raise ValueError("Valid attenuators are 0-2")
+
+
+def go():
+	print("Starting")
+	port = EoreController("COM39")
+	time.sleep(2)
+	port.port.write("\x5Dasdasdasd")
+	print("Port opened, written to")
+
+	x = 0
+	port.writeAtten(0, 0)
+	port.writeAtten(1, 0)
+	port.writeAtten(2, 0)
+
+	port.writeSwitch(1)
+
+	return
+
+	while 1:
+
+
+		try:
+			atten = float(x)
+
+			val = port.exhaust()
+			# port.readSwitch()
+			# port.writeAtten(0, atten)
+			# port.writeAtten(1, atten)
+			port.writeAtten(1, atten)
+			# port.writeAtten(0, 31.5-atten)
+
+
+		except KeyboardInterrupt:
+			raise
+
+
+
+		# x = raw_input("Enter value (0-6): ")
+		x += 0.5
+		if x > 31.5:
+			x = 0
+		# x = raw_input("Enter value (0-6): ")
+
+		# try:
+		# 	x = int(x)
+		# 	port.writeSwitch(x)
+		# except ValueError:
+		# 	print("Wat?")
+		# 	pass
+		# except TypeError:
+		# 	print("Wat?")
+		# 	pass
+
+		# x += 1
+		# if x > 7:
+		# 	x = 0
+
+if __name__ == "__main__":
+	go()
