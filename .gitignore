@@ -1,0 +1,23 @@
+*.o
+*.lo
+*.la
+*.al
+.libs
+*.so
+*.so.[0-9]*
+*.a
+*.pyc
+*.pyo
+__pycache__
+*.rej
+*~
+\#*#
+.#*
+.*.swp
+.DS_Store
+__Previews
+*.PrjPcbStructure
+History
+Project Logs for *
+Project Outputs for *
+*.LOG
