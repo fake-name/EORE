@@ -5,6 +5,6 @@
     "full_compilation": false, 
     "platform": 1, 
     "platform_name": "Arduino AVR Boards", 
-    "serial_port": 0, 
+    "serial_port": 1, 
     "set_bare_gcc_only": false
 }

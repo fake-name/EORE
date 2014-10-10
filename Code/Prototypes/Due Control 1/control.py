@@ -105,27 +105,42 @@ def go():
 	port.writeAtten(1, 0)
 	port.writeAtten(2, 0)
 
-	port.writeSwitch(1)
+	vals = [0,1,2,3,4,5]
 
-	return
+	port.writeSwitch(vals[0])
+
+	port.writeAtten(2, 31.5)
+
 
 	while 1:
 
 
-		try:
-			atten = float(x)
+		# try:
+		# 	atten = float(x)
 
-			val = port.exhaust()
-			# port.readSwitch()
-			# port.writeAtten(0, atten)
-			# port.writeAtten(1, atten)
-			port.writeAtten(1, atten)
-			# port.writeAtten(0, 31.5-atten)
+		# 	val = port.exhaust()
+		# 	# port.readSwitch()
+		# 	port.writeAtten(0, atten)
+		# 	# port.writeAtten(1, atten)
+		# 	port.writeAtten(2, atten)
+		# 	# port.writeAtten(0, 31.5-atten)
 
 
-		except KeyboardInterrupt:
-			raise
+		# except KeyboardInterrupt:
+		# 	raise
 
+
+		x = 0
+		while 1:
+			x = (x + 1) % len(vals)
+			port.writeSwitch(vals[x])
+			time.sleep(1)
+
+		port.writeAtten(0, 0)
+		time.sleep(1)
+
+		port.writeAtten(0, 0)
+		time.sleep(1)
 
 
 		# x = raw_input("Enter value (0-6): ")

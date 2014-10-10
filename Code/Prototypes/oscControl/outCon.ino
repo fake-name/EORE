@@ -37,14 +37,13 @@ void setup()
 	// This will print some debugging info to the serial console.
 	vfo->debugSi570();
 
-	//set the initial frequency
-	vfo->setFrequency(26150000L);
 
 	#define DELAY_TIME 200
 
 
-		vfo->setFrequency(100E6);
-		delay(DELAY_TIME);
+
+	vfo->setFrequency(100E6);
+
 	while (1)
 
 	{
