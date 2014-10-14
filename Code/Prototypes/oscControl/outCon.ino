@@ -14,10 +14,144 @@ Si570 *vfo;
 // Arduino crap
 #include "Arduino.h"
 
-void loop()
+
+#define PACKET_HEADER 0x5D
+#define WRITE_FREQ    0xC0
+
+
+typedef enum
 {
+	NO_PACKET,
+	WAIT_COMMAND,
+
+	WAIT_DATA_1,
+	WAIT_DATA_2,
+	WAIT_DATA_3,
+	WAIT_DATA_4,
+	WAIT_CHECKSUM,
+
+	PACKET_VALID
+} sysState;
+
+
+typedef union UnionU32_t
+{
+	uint8_t  bytes[4];
+	uint32_t value;
+} unionU32_t;
+
+typedef struct
+{
+	uint8_t command;
+	unionU32_t value;
+} command_packet;
+
+volatile uint8_t checksum = 0;
+
+volatile command_packet packet = {0, 0};
+volatile sysState state = NO_PACKET;
+
+
+void parse(uint8_t dataByte)
+{
+	switch (state)
+	{
+		case NO_PACKET:
+			if (dataByte == PACKET_HEADER)
+			{
+				state = WAIT_COMMAND;
+				checksum += dataByte;
+			}
+			break;
+
+		case WAIT_COMMAND:
+			packet.command = dataByte;
+			state = WAIT_DATA_1;
+			checksum += dataByte;
+			break;
+
+		case WAIT_DATA_1:
+
+			packet.value.bytes[0] = dataByte;
+			state = WAIT_DATA_2;
+			checksum += dataByte;
+			break;
+		case WAIT_DATA_2:
+
+			packet.value.bytes[1] = dataByte;
+			state = WAIT_DATA_3;
+			checksum += dataByte;
+			break;
+		case WAIT_DATA_3:
+
+			packet.value.bytes[2] = dataByte;
+			state = WAIT_DATA_4;
+			checksum += dataByte;
+			break;
+		case WAIT_DATA_4:
+
+			packet.value.bytes[3] = dataByte;
+			state = WAIT_CHECKSUM;
+			checksum += dataByte;
+			break;
+
+		case WAIT_CHECKSUM:
+
+			if (dataByte ==  checksum)
+			{
+				state = PACKET_VALID;
+				process_packet(&packet);
+			}
+			else
+			{
+				Serial.println("Invalid checksum!");
+				Serial.print("Should be ");
+				Serial.print(checksum);
+				Serial.print(" received ");
+				Serial.println(dataByte);
+			}
+			// Falls through to default (intentionally)!
+		default:
+			state = NO_PACKET;
+			checksum = 0;
+			break;
+	}
 
 }
+
+
+void process_packet(volatile command_packet *pkt)
+{
+
+	switch (pkt->command)
+	{
+		case WRITE_FREQ:
+			if (pkt->value.value < 10e6 | pkt->value.value > 810e6 )
+			{
+				Serial.print("ERROR: Invalid Frequency: ");
+				Serial.println(pkt->value.value);
+			}
+			else
+			{
+				vfo->setFrequency(pkt->value.value);
+				Serial.print("OK: Freq Set: ");
+				Serial.println(pkt->value.value);
+			}
+			break;
+
+
+
+		default:
+			Serial.println("Error! Unknown command!");
+			break;
+	}
+
+
+}
+
+
+
+
 
 void setup()
 {
@@ -47,6 +181,11 @@ void setup()
 	while (1)
 
 	{
+		if (Serial.available())
+		{
+			uint8_t ser = Serial.read();
+			parse(ser);
+		}
 		// for (long x = 25000000; x < 500000000; x += 1000000)
 		// {
 		// 	Serial.print("Tuning to ");
@@ -80,3 +219,6 @@ void setup()
 
 	}
 }
+
+
+void loop() {}  // Fuck yo loop

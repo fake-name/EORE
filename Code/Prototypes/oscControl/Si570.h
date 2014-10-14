@@ -25,7 +25,7 @@ public:
 
 private:
   uint8_t i2c_address;
-  uint8_t dco_reg[13];
+  uint8_t dco_reg[14];
   unsigned long bitval[38];
   unsigned long f_center;
   unsigned long frequency;

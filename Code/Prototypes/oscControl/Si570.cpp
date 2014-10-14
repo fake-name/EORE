@@ -12,13 +12,18 @@
 
 #include "Si570.h"
 
-
-
-
+#include <stdarg.h>
 void debug(char const *fmt, ... )
 {
-	Serial.println("Debug line!");
+	char buf[128]; // resulting string limited to 128 chars
+	va_list args;
+	va_start (args, fmt );
+	vsnprintf(buf, 128, fmt, args);
+	va_end (args);
+	Serial.print(buf);
 }
+
+
 
 Si570::Si570(uint8_t si570_address, uint32_t calibration_frequency) {
 	i2c_address = si570_address;
@@ -67,18 +72,18 @@ Si570::Si570(uint8_t registers[], uint32_t calibration_frequency) {
 }
 
 void Si570::debugSi570() {
-	debug(" --- Si570 Debug Info ---");
-	debug("Crystal frequency calibrated at: %lu", freq_xtal);
-	debug("Status: %i", status);
+	debug(" --- Si570 Debug Info ---\n");
+	debug("Crystal frequency calibrated at: %lu\n", freq_xtal);
+	debug("Status: %i\n", status);
 	for (int i = 7; i < 13; i++) {
-		debug("Register[%i] = %02x", i, dco_reg[i]);
+		debug("Register[%i] = %02x\n", i, dco_reg[i]);
 	}
-	debug("HsDivider = %i  N1 = %i", getHsDiv(), getN1());
-	debug("Reference Frequency (hex)   : %04lx%04lx", (uint32_t)(getRfReq() >> 32), (uint32_t)(getRfReq() & 0xffffffff));
+	debug("HsDivider = %i  N1 = %i\n", getHsDiv(), getN1());
+	debug("Reference Frequency (hex)   : %04lx%04lx\n", (uint32_t)(getRfReq() >> 32), (uint32_t)(getRfReq() & 0xffffffff));
 
 	char freq_string[10];
 	dtostrf(getRfReqDouble(), -8, 3, freq_string);
-	debug("Reference Frequency (double): %s", freq_string);
+	debug("Reference Frequency (double): %s\n", freq_string);
 }
 
 uint8_t Si570::getHsDiv() {
@@ -126,7 +131,7 @@ int Si570::i2c_write(uint8_t reg_address, uint8_t *data, uint8_t length) {
 
 	int error = Wire.endTransmission();
 	if (error != 0) {
-		debug("Error writing %i bytes to register %i: %i", length, reg_address, error);
+		debug("Error writing %i bytes to register %i: %i\n", length, reg_address, error);
 		return -1;
 	}
 	return length;
@@ -150,13 +155,13 @@ int Si570::i2c_read(uint8_t reg_address, uint8_t *output, uint8_t length) {
 
 	int error = Wire.endTransmission();
 	if (error != 0) {
-		debug("Error reading %i bytes from register %i. endTransmission() returned %i", length, reg_address, error);
+		debug("Error reading %i bytes from register %i. endTransmission() returned %\ni", length, reg_address, error);
 		return 0;
 	}
 
 	int len = Wire.requestFrom(this->i2c_address,length);
 	if (len != length) {
-		debug("Requested %i bytes and only got %i bytes", length, len);
+		debug("Requested %i bytes and only got %i bytes\n", length, len);
 	}
 	for (int i = 0; i < len && Wire.available(); i++)
 		output[i] = Wire.read();
@@ -171,7 +176,7 @@ bool Si570::read_si570(){
 		if (i2c_read(7, &(dco_reg[7]), 6) == 6) {
 			return true;
 		}
-		debug("Error reading Si570 registers... Retrying.");
+		debug("Error reading Si570 registers... Retrying.\n");
 		delay(50);
 	}
 	return false;
