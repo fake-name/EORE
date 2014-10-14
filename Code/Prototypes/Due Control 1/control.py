@@ -1,8 +1,6 @@
 
 import time
 import serial
-import binascii
-import random
 
 
 SWITCH_SHUTDOWN      = 0x07
@@ -105,7 +103,7 @@ def go():
 	port.writeAtten(1, 0)
 	port.writeAtten(2, 0)
 
-	vals = [0,1,2,3,4,5]
+	vals = [0,2,3,4,5]
 
 	port.writeSwitch(vals[0])
 
