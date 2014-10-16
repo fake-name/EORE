@@ -1,4 +1,13 @@
 
+#define SI570_DEBUG
+
+#include <Wire.h>
+#include <stdlib.h>
+#include "Si570.h"
+
+Si570 *vfo;
+
+
 #define SW_1 		44
 #define SW_2 		30
 #define SW_3 		32
@@ -18,23 +27,39 @@ uint8_t cnt;
 #define WRITE_ATTEN_1 0xAA
 #define WRITE_ATTEN_2 0xAB
 #define WRITE_ATTEN_3 0xAC
-#define WRITE_SWITCH  0xC0
+#define WRITE_SWITCH  0x0C
+#define WRITE_FREQ    0xC0
 
 
 typedef enum
 {
 	NO_PACKET,
-	HAVE_HEADER,
-	HAVE_COMMAND,
-	HAVE_DATA,
+	WAIT_COMMAND,
+
+	WAIT_DATA_1,
+	WAIT_DATA_2,
+	WAIT_DATA_3,
+	WAIT_DATA_4,
+	WAIT_CHECKSUM,
+
 	PACKET_VALID
 } sysState;
+
+
+
+
+typedef union UnionU32_t
+{
+	uint8_t  bytes[4];
+	uint32_t value;
+} unionU32_t;
 
 typedef struct
 {
 	uint8_t command;
-	uint8_t value;
+	unionU32_t value;
 } command_packet;
+
 
 volatile uint8_t checksum = 0;
 
@@ -124,27 +149,41 @@ void process_packet(volatile command_packet *pkt)
 	{
 		case WRITE_ATTEN_1:
 			Serial.print("Atten Set 1 ");
-			Serial.println(pkt->value);
-			writeAtten(0, pkt->value);
+			Serial.println(pkt->value.value);
+			writeAtten(0, (uint8_t) pkt->value.value);
 			break;
 
 		case WRITE_ATTEN_2:
 			Serial.print("Atten Set 2 ");
-			Serial.println(pkt->value);
-			writeAtten(1, pkt->value);
+			Serial.println(pkt->value.value);
+			writeAtten(1, (uint8_t) pkt->value.value);
 			break;
 
 		case WRITE_ATTEN_3:
 			Serial.print("Atten Set 3 ");
-			Serial.println(pkt->value);
-			writeAtten(2, pkt->value);
+			Serial.println(pkt->value.value);
+			writeAtten(2, (uint8_t) pkt->value.value);
 			break;
 
 
 		case WRITE_SWITCH:
 			Serial.print("Switch Set ");
-			Serial.println(pkt->value);
-			writeSwitch(pkt->value);
+			Serial.println(pkt->value.value);
+			writeSwitch((uint8_t) pkt->value.value);
+			break;
+
+		case WRITE_FREQ:
+			if (pkt->value.value < 10e6 | pkt->value.value > 810e6 )
+			{
+				Serial.print("ERROR: Invalid Frequency: ");
+				Serial.println(pkt->value.value);
+			}
+			else
+			{
+				vfo->setFrequency(pkt->value.value);
+				Serial.print("OK: Freq Set: ");
+				Serial.println(pkt->value.value);
+			}
 			break;
 
 		default:
@@ -155,6 +194,7 @@ void process_packet(volatile command_packet *pkt)
 
 }
 
+
 void parse(uint8_t dataByte)
 {
 	switch (state)
@@ -162,25 +202,43 @@ void parse(uint8_t dataByte)
 		case NO_PACKET:
 			if (dataByte == PACKET_HEADER)
 			{
-				state = HAVE_HEADER;
+				state = WAIT_COMMAND;
 				checksum += dataByte;
 			}
 			break;
 
-		case HAVE_HEADER:
+		case WAIT_COMMAND:
 			packet.command = dataByte;
-			state = HAVE_COMMAND;
+			state = WAIT_DATA_1;
 			checksum += dataByte;
 			break;
 
-		case HAVE_COMMAND:
+		case WAIT_DATA_1:
 
-			packet.value = dataByte;
-			state = HAVE_DATA;
+			packet.value.bytes[0] = dataByte;
+			state = WAIT_DATA_2;
+			checksum += dataByte;
+			break;
+		case WAIT_DATA_2:
+
+			packet.value.bytes[1] = dataByte;
+			state = WAIT_DATA_3;
+			checksum += dataByte;
+			break;
+		case WAIT_DATA_3:
+
+			packet.value.bytes[2] = dataByte;
+			state = WAIT_DATA_4;
+			checksum += dataByte;
+			break;
+		case WAIT_DATA_4:
+
+			packet.value.bytes[3] = dataByte;
+			state = WAIT_CHECKSUM;
 			checksum += dataByte;
 			break;
 
-		case HAVE_DATA:
+		case WAIT_CHECKSUM:
 
 			if (dataByte ==  checksum)
 			{
@@ -197,12 +255,14 @@ void parse(uint8_t dataByte)
 			}
 			// Falls through to default (intentionally)!
 		default:
+			Serial.print("Rx Complete");
 			state = NO_PACKET;
 			checksum = 0;
 			break;
 	}
 
 }
+
 
 
 
@@ -219,6 +279,27 @@ void loop()
 	}
 
 	Serial.begin(115200);
+
+
+	Serial.println("Device init...");
+	vfo = new Si570(SI570_I2C_ADDRESS, 56320000);
+
+	if (vfo->status == SI570_ERROR) {
+		// The Si570 is unreachable. Show an error for 3 seconds and continue.
+		Serial.println("Si570 comm error");
+		delay(3000);
+	}
+
+
+	// This will print some debugging info to the serial console.
+	vfo->debugSi570();
+
+
+	#define DELAY_TIME 200
+
+
+
+	vfo->setFrequency(100E6);
 
 
 	while(1)
