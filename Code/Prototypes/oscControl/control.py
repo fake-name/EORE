@@ -29,7 +29,9 @@ class OscControl(object):
 			pkt += chr(value & 0xFF)
 			value >>= 8
 
-		pkt += self.__calculateChecksum(pkt)
+		cksum = self.__calculateChecksum(pkt)
+		pkt += cksum
+		print("Checksum", ord(cksum))
 		self.port.write(pkt)
 		time.sleep(0.05)
 		rx = self.exhaust()
@@ -44,8 +46,9 @@ class OscControl(object):
 		return ret.strip()
 
 
-	# Set oscillatr frequency
+	# Set oscillator frequency
 	def writeOscillator(self, freq):
+		print("Writing oscillator", freq)
 		freq = int(freq)
 		if freq < 10e6 or freq > 810e6:
 			raise ValueError("Frequency %s is not valid. Valid available frequencies are 10 Mhz - 810 Mhz." % freq)
@@ -66,7 +69,7 @@ class OscControl(object):
 def go():
 	print("Starting")
 	port = OscControl("COM29")
-	port.port.write("\x5Dasdasdasd")
+	# port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
 	print(port.exhaust())
 	time.sleep(2)

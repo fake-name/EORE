@@ -13,8 +13,10 @@ PACKET_HEADER = "\x5D"
 WRITE_ATTEN_1 = "\xAA"
 WRITE_ATTEN_2 = "\xAB"
 WRITE_ATTEN_3 = "\xAC"
-WRITE_SWITCH  = "\xC0"
+WRITE_SWITCH  = "\x0C"
+WRITE_FREQ    = "\xC0"
 
+#define WRITE_FREQ    0xC0
 
 class EoreController(object):
 
@@ -27,12 +29,17 @@ class EoreController(object):
 		self.port = serial.Serial(portName, 115200)
 
 
-	def calculateChecksum(self, instr):
+
+
+	# Calculate checksum for string {instr}
+	# this is a very simple checksum, not a CRC or anything.
+	# For the short packet sizes used here, it's sufficent.
+	def __calculateChecksum(self, instr):
 		cksum = 0
 		for char in instr:
 			cksum += ord(char)
-
 		return chr(cksum & 0xFF)
+
 
 	# def readSwitch(self):
 	# 	pkt = "%s%s\x00" % (HEADER, READ_CMD)
@@ -46,9 +53,12 @@ class EoreController(object):
 
 
 	# switchChannel implicitly turns on the switch.
-	def writeSwitch(self, chan):
+	def writeSwitch(self, switchNo, chan):
 		if chan > 0x07 or chan < 0x00 or chan == 0x06:
 			raise ValueError("Invalid switch channel '%s'!" % chan)
+
+		if switchNo != 0:
+			raise ValueError("Only switch 0 is supported at this time.")
 
 		self.__sendCommand(WRITE_SWITCH, chan)
 
@@ -56,11 +66,14 @@ class EoreController(object):
 
 	def __sendCommand(self, cmd, value):
 
-		if value > 0xFF or value < 0:
-			raise ValueError("Switch value must be a 8-bit unsigned value.")
 
-		pkt = "%s%s%s" % (HEADER, cmd, chr(value))
-		pkt += self.calculateChecksum(pkt)
+		pkt = "%s%s" % (HEADER, cmd)
+		for dummy_x in range(4):
+			pkt += chr(value & 0xFF)
+			value >>= 8
+
+
+		pkt += self.__calculateChecksum(pkt)
 		self.port.write(pkt)
 		time.sleep(0.05)
 		rx = self.exhaust()
@@ -91,6 +104,31 @@ class EoreController(object):
 			raise ValueError("Valid attenuators are 0-2")
 
 
+	# Set oscillator frequency
+	def writeOscillator(self, osc, freq):
+
+
+		if osc != 0:
+			raise ValueError("Only oscillator number 0 is supported at this time.")
+
+		print("Writing oscillator", freq)
+		freq = int(freq)
+		if freq < 10e6 or freq > 810e6:
+			raise ValueError("Frequency %s is not valid. Valid available frequencies are 10 Mhz - 810 Mhz." % freq)
+
+		self.__sendCommand(WRITE_FREQ, freq)
+
+
+	# Needs hardware support, not currently supported
+	def enableOscillator(self, powState=True):
+		pass
+
+	# Convenience method
+	def disableOscillator(self):
+		self.enableOscillator(False)
+
+
+
 def go():
 	print("Starting")
 	port = EoreController("COM39")
@@ -103,9 +141,9 @@ def go():
 	port.writeAtten(1, 0)
 	port.writeAtten(2, 0)
 
-	vals = [0,2,3,4,5]
+	vals = [0,1,2,3,4,5]
 
-	port.writeSwitch(vals[0])
+	port.writeSwitch(0, vals[0])
 
 	port.writeAtten(2, 31.5)
 
@@ -131,7 +169,8 @@ def go():
 		x = 0
 		while 1:
 			x = (x + 1) % len(vals)
-			port.writeSwitch(vals[x])
+			port.writeSwitch(0, vals[x])
+			port.writeOscillator(0, 50e6+(10e6*vals[x]))
 			time.sleep(1)
 
 		port.writeAtten(0, 0)
@@ -149,7 +188,7 @@ def go():
 
 		# try:
 		# 	x = int(x)
-		# 	port.writeSwitch(x)
+		# 	port.writeSwitch(0, x)
 		# except ValueError:
 		# 	print("Wat?")
 		# 	pass
