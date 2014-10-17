@@ -53,9 +53,12 @@ class EoreController(object):
 
 
 	# switchChannel implicitly turns on the switch.
-	def writeSwitch(self, chan):
+	def writeSwitch(self, switchNo, chan):
 		if chan > 0x07 or chan < 0x00 or chan == 0x06:
 			raise ValueError("Invalid switch channel '%s'!" % chan)
+
+		if switchNo != 0:
+			raise ValueError("Only switch 0 is supported at this time.")
 
 		self.__sendCommand(WRITE_SWITCH, chan)
 
@@ -102,7 +105,12 @@ class EoreController(object):
 
 
 	# Set oscillator frequency
-	def writeOscillator(self, freq):
+	def writeOscillator(self, osc, freq):
+
+
+		if osc != 0:
+			raise ValueError("Only oscillator number 0 is supported at this time.")
+
 		print("Writing oscillator", freq)
 		freq = int(freq)
 		if freq < 10e6 or freq > 810e6:
@@ -135,7 +143,7 @@ def go():
 
 	vals = [0,1,2,3,4,5]
 
-	port.writeSwitch(vals[0])
+	port.writeSwitch(0, vals[0])
 
 	port.writeAtten(2, 31.5)
 
@@ -161,8 +169,8 @@ def go():
 		x = 0
 		while 1:
 			x = (x + 1) % len(vals)
-			port.writeSwitch(vals[x])
-			port.writeOscillator(50e6+(10e6*vals[x]))
+			port.writeSwitch(0, vals[x])
+			port.writeOscillator(0, 50e6+(10e6*vals[x]))
 			time.sleep(1)
 
 		port.writeAtten(0, 0)
@@ -180,7 +188,7 @@ def go():
 
 		# try:
 		# 	x = int(x)
-		# 	port.writeSwitch(x)
+		# 	port.writeSwitch(0, x)
 		# except ValueError:
 		# 	print("Wat?")
 		# 	pass
