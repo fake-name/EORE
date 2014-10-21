@@ -131,7 +131,7 @@ class EoreController(object):
 
 def go():
 	print("Starting")
-	port = EoreController("COM39")
+	port = EoreController("COM4")
 	time.sleep(2)
 	port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
