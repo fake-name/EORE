@@ -3,18 +3,31 @@ import time
 import serial
 
 
-SWITCH_SHUTDOWN      = 0x07
 # 0x07 puts the switch in "shutdown" state. I /assume/ this means all
 # the switches are open, but it's not definitively documented in the datasheet.
+HEADER             = "\x5D"
 
-HEADER    = "\x5D"
+PACKET_HEADER      = "\x5D"
+WRITE_ATTEN_1      = "\xAA"
+WRITE_ATTEN_2      = "\xAB"
+WRITE_ATTEN_3      = "\xAC"
+WRITE_SWITCH       = "\x0C"
+WRITE_FREQ         = "\xC0"
 
-PACKET_HEADER = "\x5D"
-WRITE_ATTEN_1 = "\xAA"
-WRITE_ATTEN_2 = "\xAB"
-WRITE_ATTEN_3 = "\xAC"
-WRITE_SWITCH  = "\x0C"
-WRITE_FREQ    = "\xC0"
+MAIN_ANTENNA       = 0x00
+TONE_INPUT         = 0x01
+TERMINATION        = 0x02
+UNTERMINATED       = 0x03
+EMI_ANTENNA        = 0x04
+NOISE_SOURCE       = 0x05
+
+SWITCH_SHUTDOWN    = 0x07
+
+
+TONE_ATTENUATOR    = 0x00
+NOISE_ATTENUATOR   = 0x00
+MID_AMP_ATTENUATOR = 0x00
+
 
 #define WRITE_FREQ    0xC0
 
@@ -131,7 +144,7 @@ class EoreController(object):
 
 def go():
 	print("Starting")
-	port = EoreController("COM39")
+	port = EoreController("COM4")
 	time.sleep(2)
 	port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
