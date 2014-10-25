@@ -90,8 +90,7 @@ class EoreController(object):
 		self.port.write(pkt)
 		time.sleep(0.05)
 		rx = self.exhaust()
-		if rx:
-			print(rx)
+		return rx
 
 	# Read all data in the rx buffer.
 	def exhaust(self):
@@ -124,12 +123,12 @@ class EoreController(object):
 		if osc != 0:
 			raise ValueError("Only oscillator number 0 is supported at this time.")
 
-		print("Writing oscillator", freq)
+		# print("Writing oscillator", freq)
 		freq = int(freq)
 		if freq < 10e6 or freq > 810e6:
 			raise ValueError("Frequency %s is not valid. Valid available frequencies are 10 Mhz - 810 Mhz." % freq)
 
-		self.__sendCommand(WRITE_FREQ, freq)
+		return "OK:" in self.__sendCommand(WRITE_FREQ, freq)
 
 
 	# Needs hardware support, not currently supported
