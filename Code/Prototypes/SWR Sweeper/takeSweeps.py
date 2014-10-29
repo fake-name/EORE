@@ -20,28 +20,54 @@ ACQ_TYPE               = "sweeping"
 ACQ_MODE               = "average"
 ACQ_Y_SCALE            = "log-scale"
 
+# The offset from center to locate the sampling bin at.
+SAMPLE_OFFSET          = 5e6
+
+class SweeperSignalHound(sh.SignalHound):
 
 
-def setupSignalhound(hound, freq=100e6):
-	hound.configureAcquisition(ACQ_MODE, ACQ_Y_SCALE)
-	hound.configureCenterSpan(center = freq+5e6, span = ACQ_SPAN)
-	hound.configureLevel(ref = ACQ_REF_LEVEL_DB, atten = ACQ_ATTENUATION_DB)
-	hound.configureGain(gain = ACQ_GAIN_SETTING)
-	hound.configureSweepCoupling(rbw = ACQ_RBW, vbw = ACQ_VBW, sweepTime = ACQ_SWEEP_TIME_SECONDS, rbwType = "native", rejection = "no-spur-reject")
-	hound.configureWindow(window = ACQ_WINDOW_TYPE)
-	hound.configureProcUnits(units = ACQ_UNITS)
-	hound.configureTrigger(trigType = "none", edge = "rising-edge", level = 0, timeout = 5)
-	# hound.configureIO("dc", "int-ref-out", "out-logic-low")
-	# hound.configureDemod("fm", 102.3e6, 250e3, 12e3, 20, 50)
+	def setupSignalhound(self, freq=100e6):
+		self.configureAcquisition(ACQ_MODE, ACQ_Y_SCALE)
+		self.configureCenterSpan(center = freq+5e6, span = ACQ_SPAN)
+		self.configureLevel(ref = ACQ_REF_LEVEL_DB, atten = ACQ_ATTENUATION_DB)
+		self.configureGain(gain = ACQ_GAIN_SETTING)
+		self.configureSweepCoupling(rbw = ACQ_RBW, vbw = ACQ_VBW, sweepTime = ACQ_SWEEP_TIME_SECONDS, rbwType = "native", rejection = "no-spur-reject")
+		self.configureWindow(window = ACQ_WINDOW_TYPE)
+		self.configureProcUnits(units = ACQ_UNITS)
+		self.configureTrigger(trigType = "none", edge = "rising-edge", level = 0, timeout = 5)
+		# self.configureIO("dc", "int-ref-out", "out-logic-low")
+		# self.configureDemod("fm", 102.3e6, 250e3, 12e3, 20, 50)
 
-	# hound.configureRawSweep(100, 8, 2)
-	hound.initiate(mode = ACQ_TYPE, flag = "ignored")
-	print(hound.getCurrentAcquisitionSettings())
+		# self.configureRawSweep(100, 8, 2)
+		self.initiate(mode = ACQ_TYPE, flag = "ignored")
+		print(self.getCurrentAcquisitionSettings())
 
-def setAcqFreq(hound, freq):
-	hound.configureCenterSpan(center = freq+5e6, span = ACQ_SPAN)
-	hound.initiate(mode = ACQ_TYPE, flag = "ignored")
+	def setAcqCenterFreq(self, freq):
+		self.configureCenterSpan(center = freq, span = ACQ_SPAN)
+		self.initiate(mode = ACQ_TYPE, flag = "ignored")
 
+	def getPowerAtFreq(self, freq):
+
+		self.setAcqCenterFreq(freq-SAMPLE_OFFSET)
+
+		trace = self.fetchTrace()
+		traceSize = len(trace['max'])
+		# Binsize is span divided by number of returned points
+		acqBinSize = ACQ_SPAN / traceSize
+
+		# the offset of the frequency we're interested in is
+		binFreqOffset = int(SAMPLE_OFFSET / acqBinSize)
+
+		binFreqCenter = (traceSize / 2) + binFreqOffset
+
+		# Return the max of the three frequency bins around the point of interest
+		ret = max(trace['max'][binFreqCenter-1:binFreqCenter+4])
+
+		# print(traceSize, trace['max'].argmax(), binFreqCenter)
+		# print(ret, max(trace['max']))
+		# print(trace['max'][binFreqCenter-1:binFreqCenter+4])
+
+		return ret
 
 def frange(x, y, jump):
 	while x <= y:
@@ -54,9 +80,9 @@ def go():
 	print("Loggers initialized")
 	port = EoreController("COM4")
 	print("Port opened")
-	hound = sh.SignalHound()
+	hound = SweeperSignalHound()
 	print("SignalHound connected")
-	setupSignalhound(hound)
+	hound.setupSignalhound()
 	print("SignalHound configured")
 
 
@@ -71,17 +97,29 @@ def go():
 
 	port.writeAtten(2, 31.5)
 
-	while 1:
+	ret = port.writeOscillator(0, 15e6)
 
-		for x in frange(100e6, 200e6, 1e6):
-			setAcqFreq(hound, x)
+	START = 50e6
+	STOP  = 250e6
+	STEP  = 1e6
+
+	with open("log - %s.txt" % time.time(), "w") as fp:
+		fp.write("# Start: %s\n" % START)
+		fp.write("# Stop:  %s\n" % STOP)
+		fp.write("# Step:  %s\n" % STEP)
+
+
+		for x in frange(START, STOP, STEP):
 
 			ret = port.writeOscillator(0, x)
 			if not ret:
 				print("Wat?")
 			time.sleep(0.1)
-			trace = hound.fetchTrace()
-			print(x, trace['max'].max())
+			trace = hound.getPowerAtFreq(x)
+			print(x, trace)
+			fp.write("%s, %s\n" % (x, trace))
+
+
 
 
 

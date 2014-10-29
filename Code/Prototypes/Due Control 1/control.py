@@ -144,8 +144,7 @@ class EoreController(object):
 
 def go():
 	print("Starting")
-	# port = EoreController("COM4")
-	port = EoreController("COM39")
+	port = EoreController("COM4")
 	time.sleep(2)
 	port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
@@ -180,24 +179,29 @@ def go():
 		# 	raise
 
 
-		x = 0
-		while 1:
-			x = (x + 1) % len(vals)
-			port.writeSwitch(0, vals[x])
-			port.writeOscillator(0, 50e6+(10e6*vals[x]))
-			time.sleep(0.1)
+		port.writeOscillator(0, 100e6)
+		time.sleep(0.5)
+		port.writeOscillator(0, 101e6)
+		time.sleep(0.5)
 
-		port.writeAtten(0, 0)
-		time.sleep(1)
+		# x = 0
+		# while 1:
+		# 	x = (x + 1) % len(vals)
+		# 	port.writeSwitch(0, vals[x])
+		# 	port.writeOscillator(0, 50e6+(10e6*vals[x]))
+		# 	time.sleep(1)
 
-		port.writeAtten(0, 0)
-		time.sleep(1)
+		# port.writeAtten(0, 0)
+		# time.sleep(1)
+
+		# port.writeAtten(0, 0)
+		# time.sleep(1)
 
 
-		# x = raw_input("Enter value (0-6): ")
-		x += 0.5
-		if x > 31.5:
-			x = 0
+		# # x = raw_input("Enter value (0-6): ")
+		# x += 0.5
+		# if x > 31.5:
+		# 	x = 0
 		# x = raw_input("Enter value (0-6): ")
 
 		# try:
