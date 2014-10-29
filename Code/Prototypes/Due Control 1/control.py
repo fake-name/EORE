@@ -144,7 +144,8 @@ class EoreController(object):
 
 def go():
 	print("Starting")
-	port = EoreController("COM4")
+	# port = EoreController("COM4")
+	port = EoreController("COM39")
 	time.sleep(2)
 	port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
@@ -184,7 +185,7 @@ def go():
 			x = (x + 1) % len(vals)
 			port.writeSwitch(0, vals[x])
 			port.writeOscillator(0, 50e6+(10e6*vals[x]))
-			time.sleep(1)
+			time.sleep(0.1)
 
 		port.writeAtten(0, 0)
 		time.sleep(1)
