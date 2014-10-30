@@ -78,12 +78,13 @@ def go():
 	print("Starting")
 	# logSetup.initLogging()
 	print("Loggers initialized")
-	port = EoreController("COM4")
+	# port = EoreController("COM4")
+	port = EoreController("COM39")
 	print("Port opened")
-	hound = SweeperSignalHound()
-	print("SignalHound connected")
-	hound.setupSignalhound()
-	print("SignalHound configured")
+	# hound = SweeperSignalHound()
+	# print("SignalHound connected")
+	# hound.setupSignalhound()
+	# print("SignalHound configured")
 
 
 	x = 0
@@ -101,23 +102,28 @@ def go():
 
 	START = 50e6
 	STOP  = 250e6
-	STEP  = 1e6
 
-	with open("log - %s.txt" % time.time(), "w") as fp:
-		fp.write("# Start: %s\n" % START)
-		fp.write("# Stop:  %s\n" % STOP)
-		fp.write("# Step:  %s\n" % STEP)
+	START = 195.0e6
+	STOP  = 200.0e6
+	STEP  = 1e5
+
+	# with open("log - %s.csv" % time.time(), "w") as fp:
+
+	while (1):
+		# fp.write("# Start: %s\n" % START)
+		# fp.write("# Stop:  %s\n" % STOP)
+		# fp.write("# Step:  %s\n" % STEP)
 
 
 		for x in frange(START, STOP, STEP):
 
 			ret = port.writeOscillator(0, x)
-			if not ret:
-				print("Wat?")
-			time.sleep(0.1)
-			trace = hound.getPowerAtFreq(x)
-			print(x, trace)
-			fp.write("%s, %s\n" % (x, trace))
+			time.sleep(0.020)
+			print(x, ret)
+			# print(ret)
+			# print(x, trace)
+			# trace = hound.getPowerAtFreq(x)
+			# fp.write("%s, %s\n" % (x, trace))
 
 
 

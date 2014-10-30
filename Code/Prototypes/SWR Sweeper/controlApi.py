@@ -127,8 +127,9 @@ class EoreController(object):
 		freq = int(freq)
 		if freq < 10e6 or freq > 810e6:
 			raise ValueError("Frequency %s is not valid. Valid available frequencies are 10 Mhz - 810 Mhz." % freq)
-
-		return "OK:" in self.__sendCommand(WRITE_FREQ, freq)
+		ret = self.__sendCommand(WRITE_FREQ, freq)
+		print(ret)
+		return "OK:" in ret
 
 
 	# Needs hardware support, not currently supported
