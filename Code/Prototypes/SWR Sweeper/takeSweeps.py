@@ -61,7 +61,7 @@ class SweeperSignalHound(sh.SignalHound):
 		binFreqCenter = (traceSize / 2) + binFreqOffset
 
 		# Return the max of the three frequency bins around the point of interest
-		ret = max(trace['max'][binFreqCenter-1:binFreqCenter+4])
+		ret = max(trace['max'][binFreqCenter-3:binFreqCenter+4])
 
 		# print(traceSize, trace['max'].argmax(), binFreqCenter)
 		# print(ret, max(trace['max']))
@@ -74,6 +74,33 @@ def frange(x, y, jump):
 		yield x
 		x += jump
 
+
+# import matplotlib
+# matplotlib.use("WxAgg")		#Change ploting backend
+
+import matplotlib.pyplot as pplt
+import numpy as np
+
+def plot(dataset):
+	mainWin = pplt.figure()
+
+	plot1 = mainWin.add_subplot(1,1,1)			#And plot them
+
+	x = []
+	y = []
+	for xVal, yVal in dataset:
+		if y < -60:
+			continue
+		if x < -60:
+			continue
+
+		x.append(xVal)
+		y.append(yVal)
+
+	plot1.plot(x, y)
+
+	pplt.show()
+
 def go():
 	print("Starting")
 	# logSetup.initLogging()
@@ -81,10 +108,10 @@ def go():
 	# port = EoreController("COM4")
 	port = EoreController("COM39")
 	print("Port opened")
-	# hound = SweeperSignalHound()
-	# print("SignalHound connected")
-	# hound.setupSignalhound()
-	# print("SignalHound configured")
+	hound = SweeperSignalHound()
+	print("SignalHound connected")
+	hound.setupSignalhound()
+	print("SignalHound configured")
 
 
 	x = 0
@@ -100,33 +127,37 @@ def go():
 
 	ret = port.writeOscillator(0, 15e6)
 
-	START = 50e6
-	STOP  = 250e6
+	START = 150e6
+	STOP  = 150.01e6
 
-	START = 195.0e6
-	STOP  = 200.0e6
-	STEP  = 1e5
+	# START = 195.0e6
+	# STOP  = 200.0e6
+	STEP  = 10
 
-	# with open("log - %s.csv" % time.time(), "w") as fp:
 
-	while (1):
-		# fp.write("# Start: %s\n" % START)
-		# fp.write("# Stop:  %s\n" % STOP)
-		# fp.write("# Step:  %s\n" % STEP)
+	# while (1):
 
+	data = []
+
+	with open("log - %s.csv" % time.time(), "w") as fp:
+
+		fp.write("# Start: %s\n" % START)
+		fp.write("# Stop:  %s\n" % STOP)
+		fp.write("# Step:  %s\n" % STEP)
 
 		for x in frange(START, STOP, STEP):
 
 			ret = port.writeOscillator(0, x)
 			time.sleep(0.020)
-			print(x, ret)
+			# print(x, ret)
+			trace = hound.getPowerAtFreq(x)
 			# print(ret)
-			# print(x, trace)
-			# trace = hound.getPowerAtFreq(x)
-			# fp.write("%s, %s\n" % (x, trace))
+			print(x, trace)
+			fp.write("%s, %s\n" % (x, trace))
 
+			data.append((x, trace))
 
-
+	plot(data)
 
 
 if __name__ == "__main__":

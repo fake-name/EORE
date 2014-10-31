@@ -42,8 +42,8 @@ void debugUnique(const __FlashStringHelper *fmt, ... ){
   Serial.println(buf);
 }
 
-// #define DEBUG(x ...)  // Default to NO debug
-#define DEBUG(x ...) debugUnique(x)    // UnComment for Debug
+#define DEBUG(x ...)  // Default to NO debug
+// #define DEBUG(x ...) debugUnique(x)    // UnComment for Debug
 
 // Initialize the Si570 and determine its internal crystal frequency given the default output frequency
 Si570::Si570(uint8_t si570_address, uint32_t calibration_frequency)
