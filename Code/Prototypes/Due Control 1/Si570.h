@@ -25,7 +25,7 @@ private:
   uint32_t f_center;
   uint32_t frequency;
   uint16_t hs, n1;
-  uint32_t freq_xtal;
+  uint64_t freq_xtal;
   uint64_t fdco;
   uint64_t rfreq;
   uint32_t max_delta;

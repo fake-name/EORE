@@ -282,7 +282,7 @@ void loop()
 
 
 	Serial.println("Device init...");
-	vfo = new Si570(SI570_I2C_ADDRESS, 56320000);
+	vfo = new Si570(SI570_I2C_ADDRESS, 56.320e6);
 
 	if (vfo->status == SI570_ERROR) {
 		// The Si570 is unreachable. Show an error for 3 seconds and continue.

@@ -98,7 +98,7 @@ void Si570::debugSi570()
 
   DEBUG(F("HSDIV = %i, N1 = %i"), getHSDIV(), getN1());
 
-  DEBUG(F("HSDIV = %i, N1 = %i"), getHSDIV(), getN1());
+  DEBUG(F("Xtal Freq = %llu"), freq_xtal);
 
   DEBUG(F("RFREQ (hex): %04lx%04lx"), (uint32_t)((getRFREQ() >> 32)), (uint32_t)(getRFREQ() & 0xffffffff));
 }
@@ -287,7 +287,7 @@ void Si570::setRFREQ(uint32_t fnew)
   rfreq = (fdco << 28) / freq_xtal;
 
   // Round the result
-  rfreq = rfreq + ((rfreq & 1<<(28-1))<<1);
+  // rfreq = rfreq + ((rfreq & 1<<(28-1))<<1);
 
   // Reset all Si570 registers
   for (int i = 7; i <= 12; i++)
@@ -304,6 +304,7 @@ void Si570::setRFREQ(uint32_t fnew)
   dco_reg[7]  = (hs - 4) << 5;
   dco_reg[7]  = dco_reg[7] | ((n1 - 1) >> 2);
   dco_reg[8] |= ((n1-1) & 0x3) << 6;
+
   debugSi570();
 }
 
@@ -314,18 +315,7 @@ Si570_Status Si570::setFrequency(uint32_t newfreq)
   if (frequency == newfreq)
     return status;
 
-  // Check how far we have moved the frequency
-  uint32_t delta_freq = newfreq < f_center ? f_center - newfreq : newfreq - f_center;
 
-  // If the jump is small enough, we don't have to fiddle with the dividers
-  if (delta_freq < max_delta)
-  {
-    setRFREQ(newfreq);
-    frequency = newfreq;
-    qwrite_si570();
-  }
-  else
-  {
     // otherwise it is a big jump and we need a new set of divisors and reset center frequency
     int err = findDivisors(newfreq);
     setRFREQ(newfreq);
@@ -333,7 +323,6 @@ Si570_Status Si570::setFrequency(uint32_t newfreq)
     // Calculate the new 3500 ppm delta
     max_delta = ((uint64_t) f_center * 10035LL / 10000LL) - f_center;
     write_si570();
-  }
 
   DEBUG(F("RFREQ (dec): %lu"), newfreq); // DEBUG ###
   return status;
