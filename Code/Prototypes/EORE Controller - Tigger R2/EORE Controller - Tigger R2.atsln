@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "EORE Controller - Tigger R2", "EORE Controller - Tigger R2.cproj", "{D137D206-246E-4820-8DF0-A1FAD52D576E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D137D206-246E-4820-8DF0-A1FAD52D576E}.Debug|ARM.ActiveCfg = Debug|ARM
+		{D137D206-246E-4820-8DF0-A1FAD52D576E}.Debug|ARM.Build.0 = Debug|ARM
+		{D137D206-246E-4820-8DF0-A1FAD52D576E}.Release|ARM.ActiveCfg = Release|ARM
+		{D137D206-246E-4820-8DF0-A1FAD52D576E}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
