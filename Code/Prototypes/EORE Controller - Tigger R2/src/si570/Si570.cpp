@@ -15,13 +15,12 @@
 #include "print/print.hpp"
 // #include "debug.h"
 
-#include <stdarg.h>
 #include <asf.h>
-#include <string.h>
 
 
-#define DEBUG_PR(x ...)  // Default to NO debug
-// #define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
+
+// #define DEBUG_PR(x ...)  // Default to NO debug
+#define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
 
 
 // Initialize the Si570 and determine its internal crystal frequency given the default output frequency
@@ -66,9 +65,11 @@ Si570::Si570(uint8_t si570_address, uint32_t calibration_frequency)
 
 
 /*
+#####################################################
 I2C Calls
-
+#####################################################
 */
+
 
 // Write a byte to I2C device
 void Si570::i2c_write(uint8_t reg_address, uint8_t data)
@@ -77,6 +78,31 @@ void Si570::i2c_write(uint8_t reg_address, uint8_t data)
 	// Wire.write(reg_address);
 	// Wire.write(data);
 	// Wire.endTransmission();
+
+	twi_packet_t packet;
+	volatile uint8_t status;
+
+	/* Data to send */
+	packet.buffer = &data;
+	/* Data length */
+	packet.length = 1;
+	/* Slave chip address */
+	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	/* Internal chip address */
+	packet.addr[0] = reg_address;
+	packet.addr[1] = 0;
+	packet.addr[2] = 0;
+	/* Address length */
+	packet.addr_length = 1;
+
+	/* Perform a master write access */
+	status = twi_master_write(TWI0, &packet);
+
+
+	if (status != TWI_SUCCESS)
+	{
+		DEBUG_PR("Error writing %i bytes to register %i: %i", 1, reg_address, status);
+	}
 }
 
 // Write length bytes to I2C device.
@@ -93,6 +119,30 @@ int Si570::i2c_write(uint8_t reg_address, uint8_t *data, uint8_t length)
 	// 	return -1;
 	// }
 
+	twi_packet_t packet;
+	volatile uint32_t status;
+
+	/* Data to send */
+	packet.buffer = data;
+	/* Data length */
+	packet.length = length;
+	/* Slave chip address */
+	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	/* Internal chip address */
+	packet.addr[0] = reg_address;
+	packet.addr[1] = 0;
+	packet.addr[2] = 0;
+	/* Address length */
+	packet.addr_length = 1;
+
+	/* Perform a master write access */
+	status = twi_master_write(TWI0, &packet);
+
+	if (status != TWI_SUCCESS)
+	{
+		DEBUG_PR("Error writing %i bytes to register %i: %i", length, reg_address, status);
+	 	return -1;
+	}
 	return length;
 }
 
@@ -107,13 +157,40 @@ uint8_t Si570::i2c_read(uint8_t reg_address)
 	// Wire.endTransmission();
 	// Wire.requestFrom(i2c_address, (uint8_t)1);
 	// if (Wire.available()) rdata = Wire.read();
+
+
+	twi_packet_t packet;
+	volatile uint32_t status;
+
+	/* Data to send */
+	packet.buffer = &rdata;
+	/* Data length */
+	packet.length = 1;
+	/* Slave chip address */
+	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	/* Internal chip address */
+	packet.addr[0] = reg_address;
+	packet.addr[1] = 0;
+	packet.addr[2] = 0;
+	/* Address length */
+	packet.addr_length = 1;
+
+	/* Perform a master write access */
+	status = twi_master_write(TWI0, &packet);
+
+	if (status != TWI_SUCCESS)
+	{
+		DEBUG_PR("Error reading %i bytes from register %i: %i", 1, reg_address, status);
+
+	}
+
 	return rdata;
 }
 
 // Read multiple bytes fromt he I2C device
 int Si570::i2c_read(uint8_t reg_address, uint8_t *output, uint8_t length)
 {
-	int len;
+	// int len;
 
 	// Wire.beginTransmission(i2c_address);
 	// Wire.write(reg_address);
@@ -134,7 +211,32 @@ int Si570::i2c_read(uint8_t reg_address, uint8_t *output, uint8_t length)
 	// for (int i = 0; i < len && Wire.available(); i++)
 	// 	output[i] = Wire.read();
 
-	return len;
+	twi_packet_t packet;
+	volatile uint32_t status;
+
+	/* Data to send */
+	packet.buffer = output;
+	/* Data length */
+	packet.length = length;
+	/* Slave chip address */
+	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	/* Internal chip address */
+	packet.addr[0] = reg_address;
+	packet.addr[1] = 0;
+	packet.addr[2] = 0;
+	/* Address length */
+	packet.addr_length = 1;
+
+	/* Perform a master write access */
+	status = twi_master_write(TWI0, &packet);
+
+	if (status != TWI_SUCCESS)
+	{
+		DEBUG_PR("Error reading %i bytes from register %i: %i", length, reg_address, status);
+		return 0;
+	}
+
+	return length;
 }
 
 /*
@@ -143,6 +245,12 @@ Chip specific details.
 
 
 
+
+/*
+#####################################################
+Interfacing
+#####################################################
+*/
 
 
 
@@ -245,7 +353,7 @@ void Si570::qwrite_si570()
 }
 
 #define fDCOMinkHz 4850000	// Minimum DCO frequency in kHz
-#define fDCOMaxkHz 5670000  // Maximum DCO frequency in KHz\
+#define fDCOMaxkHz 5670000  // Maximum DCO frequency in KHz
 
 // Locate an appropriate set of divisors (HSDiv and N1) give a desired output frequency
 int Si570::findDivisors(uint32_t fout)

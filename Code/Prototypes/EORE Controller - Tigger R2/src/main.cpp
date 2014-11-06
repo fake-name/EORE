@@ -100,6 +100,7 @@ void setup(void)
 	twi_conf.smbus      = 0;
 
 	twi_master_init(DEVICE_TWI, &twi_conf);
+	
 
 	/* =============== Debug UART Setup =============== */
 
@@ -123,42 +124,24 @@ void setup(void)
 }
 
 
-void send_led_command(uint8_t devAddr, uint8_t led, uint8_t brightness)
-{
-	twi_packet_t packet;
-	volatile uint8_t status;
-
-	/* Data to send */
-	packet.buffer = &brightness;
-	/* Data length */
-	packet.length = 1;
-	/* Slave chip address */
-	packet.chip = (uint32_t) devAddr >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
-	/* Internal chip address */
-	packet.addr[0] = led;
-	packet.addr[1] = 0;
-	packet.addr[2] = 0;
-	/* Address length */
-	packet.addr_length = 1;
-
-	/* Perform a master write access */
-	status = twi_master_write(TWI0, &packet);
-
-	// if (status == TWI_SUCCESS)
-	// {
-	// 	ioport_toggle_pin_level(LED_6);
-	// }
-	// else
-	// {
-	// 	ioport_toggle_pin_level(LED_5);
-	// }
-
-}
-
 int main (void)
 {
 	setup();
 
+	Si570 vfo = Si570(SI570_I2C_ADDRESS, 56.320e6);
+	
+	
+	
+	//if (vfo->status == SI570_ERROR) {
+	//	// The Si570 is unreachable. Show an error for 3 seconds and continue.
+	//	USARTWriteStrLn("Si570 comm error");
+	//	
+	//}
+
+
+	// This will print some debugging info to the serial console.
+	//vfo->debugSi570();
+	
 	uint8_t dir = 0;
 	volatile status_code_t ret;
 	uint8_t brightness = 0;
@@ -197,14 +180,25 @@ int main (void)
 		// 	brightness -= 1;
 		// }
 
-
+		/*
 		ioport_set_pin_level(LED_1, 1);
 		delay_ms(DELAY_INTERVAL);
 		ioport_set_pin_level(LED_1, 0);
-
 		
-		USARTWriteStrLn("HERP DERP");
+		
+		debugUnique("wat wat?");
+		vfo.setFrequency(100E6);
+		
+		ioport_set_pin_level(LED_1, 1);
+		delay_ms(DELAY_INTERVAL);
+		ioport_set_pin_level(LED_1, 0);
+		
+		
+		vfo.setFrequency(101E6);
+		
 
+		debugUnique("wat wat?");
+		*/
 
 	}
 	// Insert application code here, after the board has been initialized.

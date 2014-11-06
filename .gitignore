@@ -23,3 +23,4 @@ Project Outputs for *
 *.LOG
 /Code/Prototypes/SWR Sweeper/logs
 Debug
+/Code/Prototypes/SWR Sweeper/*.csv

@@ -1,13 +1,14 @@
 
-#include <inttypes.h>
+
 
 #include "print/print.hpp"
 #include <stdarg.h>
 #include <asf.h>
-#include <string.h>
+// #include <inttypes.h>
+// #include <string.h>
 
 
-void USARTWriteStr(char *data)
+void USARTWriteStr(char const *data)
 {
 	while( *data != '\0' )
 	{
@@ -16,17 +17,18 @@ void USARTWriteStr(char *data)
 }
 
 
-void USARTWriteStrLn(char *data)
+void USARTWriteStrLn(char const *data)
 {
 	while( *data != '\0' )
 	{
 		usart_putchar(DEBUG_UART, *data++);
-	}
+}
+	usart_putchar(DEBUG_UART, '\r');
 	usart_putchar(DEBUG_UART, '\n');
 }
 
 
-void debugUnique(char *fmt, ... )
+void debugUnique(char const *fmt, ... )
 {
 		char buf[128]; // resulting string limited to 128 chars
 		va_list args;
