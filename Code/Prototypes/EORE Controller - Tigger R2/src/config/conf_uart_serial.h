@@ -1,7 +1,7 @@
 /**
  * \file
  *
- * \brief Syscalls for SAM (GCC).
+ * \brief Serial USART service configuration.
  *
  * Copyright (c) 2011-2013 Atmel Corporation. All rights reserved.
  *
@@ -41,102 +41,28 @@
  *
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#ifndef CONF_USART_SERIAL_H
+#define CONF_USART_SERIAL_H
 
-/// @cond 0
-/**INDENT-OFF**/
-#ifdef __cplusplus
-extern "C" {
-#endif
-/**INDENT-ON**/
-/// @endcond
+/* A reference setting for UART */
+/** UART Interface */
+//#define CONF_UART            CONSOLE_UART
+/** Baudrate setting */
+//#define CONF_UART_BAUDRATE   115200
+/** Parity setting */
+//#define CONF_UART_PARITY     UART_MR_PAR_NO
 
-#undef errno
-extern int errno;
-extern int _end;
-extern int __ram_end__;
 
-extern caddr_t _sbrk(int incr);
-extern int link(char *old, char *new);
-extern int _close(int file);
-extern int _fstat(int file, struct stat *st);
-extern int _isatty(int file);
-extern int _lseek(int file, int ptr, int dir);
-extern void _exit(int status);
-extern void _kill(int pid, int sig);
-extern int _getpid(void);
+/* A reference setting for USART */
+/** USART Interface */
+//#define CONF_UART              USART1
+/** Baudrate setting */
+//#define CONF_UART_BAUDRATE     115200
+/** Character length setting */
+//#define CONF_UART_CHAR_LENGTH  US_MR_CHRL_8_BIT
+/** Parity setting */
+//#define CONF_UART_PARITY       US_MR_PAR_NO
+/** Stop bits setting */
+//#define CONF_UART_STOP_BITS    US_MR_NBSTOP_1_BIT
 
-extern caddr_t _sbrk(int incr)
-{
-	static unsigned char *heap = NULL;
-	unsigned char *prev_heap;
-	int ramend = (int)&__ram_end__;
-
-	if (heap == NULL) {
-		heap = (unsigned char *)&_end;
-	}
-	prev_heap = heap;
-
-	if (((int)prev_heap + incr) > ramend) {
-		return (caddr_t) -1;	
-	}
-
-	heap += incr;
-
-	return (caddr_t) prev_heap;
-}
-
-extern int link(char *old, char *new)
-{
-	return -1;
-}
-
-extern int _close(int file)
-{
-	return -1;
-}
-
-extern int _fstat(int file, struct stat *st)
-{
-	st->st_mode = S_IFCHR;
-
-	return 0;
-}
-
-extern int _isatty(int file)
-{
-	return 1;
-}
-
-extern int _lseek(int file, int ptr, int dir)
-{
-	return 0;
-}
-
-extern void _exit(int status)
-{
-	printf("Exiting with status %d.\n", status);
-
-	for (;;);
-}
-
-extern void _kill(int pid, int sig)
-{
-	return;
-}
-
-extern int _getpid(void)
-{
-	return -1;
-}
-
-/// @cond 0
-/**INDENT-OFF**/
-#ifdef __cplusplus
-}
-#endif
-/**INDENT-ON**/
-/// @endcond
+#endif/* CONF_USART_SERIAL_H_INCLUDED */

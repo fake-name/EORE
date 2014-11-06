@@ -182,9 +182,11 @@ void PWM_Handler    ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+volatile uint32_t phantomISR = 9999;
 void Dummy_Handler(void)
 {
 	while (1) {
+		phantomISR = __get_IPSR();
 	}
 }
 

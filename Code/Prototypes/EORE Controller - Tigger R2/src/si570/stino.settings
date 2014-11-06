@@ -1,0 +1,10 @@
+{
+    "arduino_folder": "C:\\Users\\Fake Name\\Desktop\\arduino-1.5.7", 
+    "baudrate": 10, 
+    "board": 0, 
+    "full_compilation": false, 
+    "platform": 2, 
+    "platform_name": "Arduino ARM (32-bits) Boards", 
+    "serial_port": 0, 
+    "set_bare_gcc_only": false
+}

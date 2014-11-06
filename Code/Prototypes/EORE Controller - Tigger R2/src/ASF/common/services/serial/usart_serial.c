@@ -1,9 +1,11 @@
 /**
+ *
  * \file
  *
- * \brief Syscalls for SAM (GCC).
+ * \brief USART Serial driver functions.
  *
- * Copyright (c) 2011-2013 Atmel Corporation. All rights reserved.
+ *
+ * Copyright (c) 2010-2013 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,103 +42,43 @@
  * \asf_license_stop
  *
  */
+#include "serial.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-/// @cond 0
-/**INDENT-OFF**/
-#ifdef __cplusplus
-extern "C" {
-#endif
-/**INDENT-ON**/
-/// @endcond
-
-#undef errno
-extern int errno;
-extern int _end;
-extern int __ram_end__;
-
-extern caddr_t _sbrk(int incr);
-extern int link(char *old, char *new);
-extern int _close(int file);
-extern int _fstat(int file, struct stat *st);
-extern int _isatty(int file);
-extern int _lseek(int file, int ptr, int dir);
-extern void _exit(int status);
-extern void _kill(int pid, int sig);
-extern int _getpid(void);
-
-extern caddr_t _sbrk(int incr)
+/**
+ * \brief Send a sequence of bytes to USART device
+ *
+ * \param usart  Base address of the USART instance.
+ * \param data   Data buffer to read
+ * \param len    Length of data
+ *
+ */
+status_code_t usart_serial_write_packet(usart_if usart, const uint8_t *data,
+		size_t len)
 {
-	static unsigned char *heap = NULL;
-	unsigned char *prev_heap;
-	int ramend = (int)&__ram_end__;
-
-	if (heap == NULL) {
-		heap = (unsigned char *)&_end;
+	while (len) {
+		usart_serial_putchar(usart, *data);
+		len--;
+		data++;
 	}
-	prev_heap = heap;
+	return STATUS_OK;
+}
 
-	if (((int)prev_heap + incr) > ramend) {
-		return (caddr_t) -1;	
+
+/**
+ * \brief Receive a sequence of bytes from USART device
+ *
+ * \param usart  Base address of the USART instance.
+ * \param data   Data buffer to write
+ * \param len    Length of data
+ *
+ */
+status_code_t usart_serial_read_packet(usart_if usart, uint8_t *data,
+		size_t len)
+{
+	while (len) {
+		usart_serial_getchar(usart, data);
+		len--;
+		data++;
 	}
-
-	heap += incr;
-
-	return (caddr_t) prev_heap;
+	return STATUS_OK;
 }
-
-extern int link(char *old, char *new)
-{
-	return -1;
-}
-
-extern int _close(int file)
-{
-	return -1;
-}
-
-extern int _fstat(int file, struct stat *st)
-{
-	st->st_mode = S_IFCHR;
-
-	return 0;
-}
-
-extern int _isatty(int file)
-{
-	return 1;
-}
-
-extern int _lseek(int file, int ptr, int dir)
-{
-	return 0;
-}
-
-extern void _exit(int status)
-{
-	printf("Exiting with status %d.\n", status);
-
-	for (;;);
-}
-
-extern void _kill(int pid, int sig)
-{
-	return;
-}
-
-extern int _getpid(void)
-{
-	return -1;
-}
-
-/// @cond 0
-/**INDENT-OFF**/
-#ifdef __cplusplus
-}
-#endif
-/**INDENT-ON**/
-/// @endcond

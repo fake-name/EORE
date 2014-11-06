@@ -51,5 +51,28 @@
 #define DRV_4_ADDR  (0xA0 | 3 << 1)
 
 
+/* =============== TWI1 =============== */
+#define PINS_DEVICE_TWI          (PIO_PA4A_TWCK0 | PIO_PA3A_TWD0)
+#define PINS_DEVICE_TWI_FLAGS    (PIO_PERIPH_A | PIO_DEFAULT)
+#define PINS_DEVICE_TWI_MASK     (PIO_PA4A_TWCK0 | PIO_PA3A_TWD0)
+#define PINS_DEVICE_TWI_PIO      PIOA
+#define PINS_DEVICE_TWI_ID       ID_PIOA
+#define PINS_DEVICE_TWI_TYPE     PIO_PERIPH_A
+#define PINS_DEVICE_TWI_ATTR     PIO_DEFAULT
+
+
+/* =============== Debug UART =============== */
+#define DEBUG_UART                 (Usart*)UART3
+#define DEBUG_UART_BAUDRATE        9600
+#define DEBUG_UART_MODE            UART_MR_PAR_NO
+#define DEBUG_UART_CHAR_LENGTH     8
+#define DEBUG_UART_PARITY          UART_MR_PAR_NO
+#define DEBUG_UART_STOP_BIT        false
+
+#define DEBUG_UART_PIN_TX         IOPORT_CREATE_PIN(PIOB, 11)
+#define DEBUG_UART_PIN_RX         IOPORT_CREATE_PIN(PIOB, 10)
+
+
+
 
 #endif // CONF_BOARD_H

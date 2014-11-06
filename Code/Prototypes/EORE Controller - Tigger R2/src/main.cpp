@@ -27,12 +27,22 @@
  #include <asf.h>
  #include <string.h>
 
+#include "print/print.hpp"
+#include "si570/Si570.hpp"
 
 #define DELAY_INTERVAL   250
 #define TWI_SPEED        400000
 
 void setup(void);
 void send_led_command(uint8_t devAddr, uint8_t led, uint8_t brightness);
+
+ISR(HardFault_Handler)
+{
+
+	ioport_set_pin_level(LED_4, 1);
+	while (1) {
+    }
+}
 
 
 void setup(void)
@@ -42,20 +52,38 @@ void setup(void)
 	sysclk_init();
 	ioport_init();
 	wdt_disable(WDT);
+	
+	
+	/* =============== General IO Setup =============== */
+	
+	ioport_set_pin_dir(HEATER_ON, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(OSC_EN, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(NOISE_DIODE, IOPORT_DIR_OUTPUT);
+	
+	
+	ioport_set_pin_level(HEATER_ON, 0);
+	ioport_set_pin_level(OSC_EN, 1);
+	ioport_set_pin_level(NOISE_DIODE, 0);
+	
+	ioport_set_pin_dir(LED_1, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(LED_2, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(LED_3, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(LED_4, IOPORT_DIR_OUTPUT);
+	
+	
+	/* =============== Hook up peripherals to the proper pins =============== */
+	
+	pmc_enable_periph_clk(ID_PIOA);
+	pmc_enable_periph_clk(ID_PIOB);
 
+	pio_configure_pin_group(PIOA, PIO_PA3A_TWD0,  PIO_TYPE_PIO_PERIPH_A);
+	pio_configure_pin_group(PIOA, PIO_PA4A_TWCK0, PIO_TYPE_PIO_PERIPH_A);
+	
+	pio_configure_pin_group(PIOB, PIO_PB10B_URXD3, PIO_TYPE_PIO_PERIPH_B);
+	pio_configure_pin_group(PIOB, PIO_PB11B_UTXD3, PIO_TYPE_PIO_PERIPH_B);
+	
+	/* =============== TWI Setup =============== */ 
 
-	/* =============== UART1 =============== */ //(UART0 is defined but not UART1)
-	#define PINS_DEVICE_TWI          (PIO_PA4A_TWCK0 | PIO_PA3A_TWD0)
-	#define PINS_DEVICE_TWI_FLAGS    (PIO_PERIPH_A | PIO_DEFAULT)
-	#define PINS_DEVICE_TWI_MASK     (PIO_PA4A_TWCK0 | PIO_PA3A_TWD0)
-	#define PINS_DEVICE_TWI_PIO      PIOA
-	#define PINS_DEVICE_TWI_ID       ID_PIOA
-	#define PINS_DEVICE_TWI_TYPE     PIO_PERIPH_A
-	#define PINS_DEVICE_TWI_ATTR     PIO_DEFAULT
-
-
-	pio_configure_pin(PIO_PA3A_TWD0,  PIO_TYPE_PIO_PERIPH_A);
-	pio_configure_pin(PIO_PA4A_TWCK0, PIO_TYPE_PIO_PERIPH_A);
 
 	pio_configure(PINS_DEVICE_TWI_PIO, PINS_DEVICE_TWI_TYPE, PINS_DEVICE_TWI_MASK, PINS_DEVICE_TWI_ATTR);
 
@@ -64,31 +92,30 @@ void setup(void)
 	sysclk_enable_peripheral_clock(ID_PIOB);
 
 
-	twi_options_t conf;
+	twi_options_t twi_conf;
 
-	conf.master_clk = sysclk_get_cpu_hz();
-	conf.speed = TWI_SPEED;
-	conf.chip = 0;
-	conf.smbus = 0;
+	twi_conf.master_clk = sysclk_get_cpu_hz();
+	twi_conf.speed      = TWI_SPEED;
+	twi_conf.chip       = 0;
+	twi_conf.smbus      = 0;
 
+	twi_master_init(DEVICE_TWI, &twi_conf);
 
-	twi_master_init(DEVICE_TWI, &conf);
+	/* =============== Debug UART Setup =============== */
 
-	ioport_set_pin_dir(LED_1, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(LED_2, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(LED_3, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(LED_4, IOPORT_DIR_OUTPUT);
+	static usart_serial_options_t usart_options = {
+		.baudrate   = DEBUG_UART_BAUDRATE,
+		.charlength = DEBUG_UART_CHAR_LENGTH,
+		.paritytype = DEBUG_UART_PARITY,
+		.stopbits   = DEBUG_UART_STOP_BIT
+	};
+	usart_serial_init(DEBUG_UART, &usart_options);
 
-	// ioport_set_pin_level(LED_DRIVER_RESET, 1);
-	// ioport_set_pin_dir(LED_DRIVER_RESET, IOPORT_DIR_OUTPUT);
-
-
-	// // SoftI2CInit();
-	// ioport_set_pin_level(LED_DRIVER_RESET, 0);
-	// delay_ms(5);
-	// ioport_set_pin_level(LED_DRIVER_RESET, 1);
-
-
+	ioport_set_pin_dir(DEBUG_UART_PIN_TX, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(DEBUG_UART_PIN_RX, IOPORT_DIR_INPUT);
+	
+	usart_enable_tx(DEBUG_UART);
+	usart_enable_rx(DEBUG_UART);
 
 
 
@@ -133,6 +160,7 @@ int main (void)
 	setup();
 
 	uint8_t dir = 0;
+	volatile status_code_t ret;
 	uint8_t brightness = 0;
 	while (1)
 	{
@@ -174,17 +202,8 @@ int main (void)
 		delay_ms(DELAY_INTERVAL);
 		ioport_set_pin_level(LED_1, 0);
 
-		ioport_set_pin_level(LED_2, 1);
-		delay_ms(DELAY_INTERVAL);
-		ioport_set_pin_level(LED_2, 0);
-
-		ioport_set_pin_level(LED_3, 1);
-		delay_ms(DELAY_INTERVAL);
-		ioport_set_pin_level(LED_3, 0);
-
-		ioport_set_pin_level(LED_4, 1);
-		delay_ms(DELAY_INTERVAL);
-		ioport_set_pin_level(LED_4, 0);
+		
+		USARTWriteStrLn("HERP DERP");
 
 
 	}
