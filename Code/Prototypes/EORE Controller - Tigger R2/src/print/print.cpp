@@ -7,6 +7,16 @@
 // #include <inttypes.h>
 // #include <string.h>
 
+void DEBUG_UART_ISR_HANDLER(void)
+{
+	uint32_t dw_status = usart_get_status(DEBUG_UART);
+	if (dw_status & US_CSR_RXRDY) {
+		uint32_t received_byte;
+		usart_read(DEBUG_UART, &received_byte);
+		usart_write(DEBUG_UART, received_byte);
+	}
+}
+
 
 void USARTWriteStr(char const *data)
 {

@@ -19,8 +19,8 @@
 
 
 
-// #define DEBUG_PR(x ...)  // Default to NO debug
-#define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
+#define DEBUG_PR(x ...)  // Default to NO debug
+// #define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
 
 
 // Initialize the Si570 and determine its internal crystal frequency given the default output frequency
@@ -36,8 +36,12 @@ Si570::Si570(uint8_t si570_address, uint32_t calibration_frequency)
 	// digitalWrite(SCL, 0);
 
 	// We are about the reset the Si570, so set the current and center frequency to the calibration frequency.
-	f_center = frequency = calibration_frequency;
+	this->f_center = calibration_frequency;
+	this->frequency = calibration_frequency;
+}
 
+void Si570::initialize()
+{
 	max_delta = ((uint64_t) f_center * 10035LL / 10000LL) - f_center;
 
 	// Force Si570 to reset to initial freq
@@ -48,7 +52,7 @@ Si570::Si570(uint8_t si570_address, uint32_t calibration_frequency)
 	if (read_si570())
 	{
 		DEBUG_PR("Successfully initialized Si570");
-		freq_xtal = (unsigned long) ((uint64_t) calibration_frequency * getHSDIV() * getN1() * (1L << 28) / getRFREQ());
+		freq_xtal = (unsigned long) ((uint64_t) this->frequency * getHSDIV() * getN1() * (1L << 28) / getRFREQ());
 		status = SI570_READY;
 	}
 	else
@@ -87,7 +91,7 @@ void Si570::i2c_write(uint8_t reg_address, uint8_t data)
 	/* Data length */
 	packet.length = 1;
 	/* Slave chip address */
-	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	packet.chip = (uint32_t) this->i2c_address;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
 	/* Internal chip address */
 	packet.addr[0] = reg_address;
 	packet.addr[1] = 0;
@@ -101,7 +105,7 @@ void Si570::i2c_write(uint8_t reg_address, uint8_t data)
 
 	if (status != TWI_SUCCESS)
 	{
-		DEBUG_PR("Error writing %i bytes to register %i: %i", 1, reg_address, status);
+		DEBUG_PR("Error writing %i byte to register %i: %i", 1, reg_address, status);
 	}
 }
 
@@ -127,7 +131,7 @@ int Si570::i2c_write(uint8_t reg_address, uint8_t *data, uint8_t length)
 	/* Data length */
 	packet.length = length;
 	/* Slave chip address */
-	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	packet.chip = (uint32_t) this->i2c_address;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
 	/* Internal chip address */
 	packet.addr[0] = reg_address;
 	packet.addr[1] = 0;
@@ -167,7 +171,7 @@ uint8_t Si570::i2c_read(uint8_t reg_address)
 	/* Data length */
 	packet.length = 1;
 	/* Slave chip address */
-	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	packet.chip = (uint32_t) this->i2c_address;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
 	/* Internal chip address */
 	packet.addr[0] = reg_address;
 	packet.addr[1] = 0;
@@ -176,11 +180,11 @@ uint8_t Si570::i2c_read(uint8_t reg_address)
 	packet.addr_length = 1;
 
 	/* Perform a master write access */
-	status = twi_master_write(TWI0, &packet);
+	status = twi_master_read(TWI0, &packet);
 
 	if (status != TWI_SUCCESS)
 	{
-		DEBUG_PR("Error reading %i bytes from register %i: %i", 1, reg_address, status);
+		DEBUG_PR("Error reading %i byte from register %i: %i", 1, reg_address, status);
 
 	}
 
@@ -219,7 +223,7 @@ int Si570::i2c_read(uint8_t reg_address, uint8_t *output, uint8_t length)
 	/* Data length */
 	packet.length = length;
 	/* Slave chip address */
-	packet.chip = (uint32_t) this->i2c_address >> 1;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
+	packet.chip = (uint32_t) this->i2c_address;  // Device address must be >> by one, since apparently the driver injects the read/write flag internally
 	/* Internal chip address */
 	packet.addr[0] = reg_address;
 	packet.addr[1] = 0;
@@ -228,7 +232,7 @@ int Si570::i2c_read(uint8_t reg_address, uint8_t *output, uint8_t length)
 	packet.addr_length = 1;
 
 	/* Perform a master write access */
-	status = twi_master_write(TWI0, &packet);
+	status = twi_master_read(TWI0, &packet);
 
 	if (status != TWI_SUCCESS)
 	{
@@ -427,7 +431,7 @@ Si570_Status Si570::setFrequency(uint32_t newfreq)
 
 
 		// otherwise it is a big jump and we need a new set of divisors and reset center frequency
-		int err = findDivisors(newfreq);
+		findDivisors(newfreq);
 		setRFREQ(newfreq);
 		f_center = frequency = newfreq;
 		// Calculate the new 3500 ppm delta

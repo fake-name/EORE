@@ -21,6 +21,7 @@ public:
 	Si570(uint8_t i2c_address, uint32_t calibration_frequency);
 	Si570_Status setFrequency(uint32_t newfreq);
 	void debugSi570();
+	void initialize();
 
 	Si570_Status status;
 

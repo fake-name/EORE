@@ -25,15 +25,18 @@
 
 #define HEATER_ON       IOPORT_CREATE_PIN(PIOA, 5)
 #define OSC_EN          IOPORT_CREATE_PIN(PIOA, 6)
-#define NOISE_DIODE     IOPORT_CREATE_PIN(PIOB, 0)
+#define NOISE_DIODE_PS  IOPORT_CREATE_PIN(PIOB, 0)
 
 #define CS_1            IOPORT_CREATE_PIN(PIOB, 1)
 #define CS_2            IOPORT_CREATE_PIN(PIOB, 2)
 #define CS_3            IOPORT_CREATE_PIN(PIOB, 3)
 #define CS_4            IOPORT_CREATE_PIN(PIOA, 17)
-#define CS_5            IOPORT_CREATE_PIN(PIOA, 18)
-#define CS_6            IOPORT_CREATE_PIN(PIOA, 19)
-#define CS_7            IOPORT_CREATE_PIN(PIOA, 12)
+#define CS_5            IOPORT_CREATE_PIN(PIOA, 19)
+#define CS_OSC_ATTEN    IOPORT_CREATE_PIN(PIOA, 12)
+#define CS_SW           IOPORT_CREATE_PIN(PIOA, 18)
+
+#define MOSI            IOPORT_CREATE_PIN(PIOA, 13)
+#define SCK             IOPORT_CREATE_PIN(PIOA, 14)
 
 #define SWITCH_2        IOPORT_CREATE_PIN(PIOB, 1)
 #define SWITCH_3        IOPORT_CREATE_PIN(PIOB, 2)
@@ -63,7 +66,8 @@
 
 /* =============== Debug UART =============== */
 #define DEBUG_UART                 (Usart*)UART3
-#define DEBUG_UART_BAUDRATE        9600
+#define DEBUG_UART_ID              ID_UART3
+#define DEBUG_UART_BAUDRATE        115200
 #define DEBUG_UART_MODE            UART_MR_PAR_NO
 #define DEBUG_UART_CHAR_LENGTH     8
 #define DEBUG_UART_PARITY          UART_MR_PAR_NO
@@ -72,6 +76,8 @@
 #define DEBUG_UART_PIN_TX         IOPORT_CREATE_PIN(PIOB, 11)
 #define DEBUG_UART_PIN_RX         IOPORT_CREATE_PIN(PIOB, 10)
 
+#define DEBUG_UART_IRQ            UART3_IRQn
+#define DEBUG_UART_ISR_HANDLER    UART3_Handler
 
 
 
