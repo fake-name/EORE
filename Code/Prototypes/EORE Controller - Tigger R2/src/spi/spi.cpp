@@ -22,16 +22,18 @@ void spinWait(uint8_t cycles)
 	
 }
 
-void writeAttenuator(uint8_t atten, uint8_t val)
+Spi_Status writeAttenuator(uint8_t atten, uint8_t val)
 {
 	if (val > 0x3F)
 	{
 		USARTWriteStrLn("Error: Invalid attenuation setting");
+		return SET_ERROR;
 	}
 
 	if (atten > 5)
 	{
 		USARTWriteStrLn("Error: Invalid attenuator choice");
+		return SET_ERROR;
 	}
 
 	spiWrite(val);
@@ -69,7 +71,7 @@ void writeAttenuator(uint8_t atten, uint8_t val)
 			ioport_set_pin_level(CS_5, 0);
 			break;
 	}
-
+	return SET_SUCCESS;
 
 }
 
@@ -81,8 +83,10 @@ void writeAttenuator(uint8_t atten, uint8_t val)
 #define SW_2_bp   3
 
 
-void writeSwitch(uint8_t swNo, uint8_t val)
+Spi_Status writeSwitch(uint8_t swNo, uint8_t val)
 {
+	// TODO: Sanity checking these inputs!
+	
 	// mask out the bits relevant to the switch in question, shift the in val 
 	// to the right place, and then or them into place. Then, write that out to the sr.
 	switch (swNo)
@@ -102,6 +106,9 @@ void writeSwitch(uint8_t swNo, uint8_t val)
 	ioport_set_pin_level(CS_SW, 1);
 	spinWait(1);
 	ioport_set_pin_level(CS_SW, 0);
+	
+	
+	return SET_SUCCESS;
 
 
 }

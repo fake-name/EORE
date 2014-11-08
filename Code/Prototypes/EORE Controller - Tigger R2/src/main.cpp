@@ -36,11 +36,10 @@
 #define TWI_SPEED        400000
 
 #define PACKET_HEADER 0x5D
-#define WRITE_ATTEN_1 0xAA
-#define WRITE_ATTEN_2 0xAB
-#define WRITE_ATTEN_3 0xAC
+#define WRITE_ATTEN   0xAA
 #define WRITE_SWITCH  0x0C
 #define WRITE_FREQ    0xC0
+#define WRITE_MISC    0xDD
 
 Si570 vfo = Si570(SI570_I2C_ADDRESS, 56.320e6);
 
@@ -51,7 +50,7 @@ typedef enum
 {
 	NO_PACKET,
 	WAIT_COMMAND,
-
+	WAIT_TGT,
 	WAIT_DATA_1,
 	WAIT_DATA_2,
 	WAIT_DATA_3,
@@ -70,12 +69,13 @@ typedef union UnionU32_t
 typedef struct
 {
 	uint8_t command;
+	uint8_t target;
 	unionU32_t value;
 } command_packet;
 
 
 volatile uint8_t checksum = 0;
-volatile command_packet packet = {0, 0};
+volatile command_packet packet = {0, 0, 0};
 volatile sysState state = NO_PACKET;
 
 
@@ -85,48 +85,109 @@ volatile sysState state = NO_PACKET;
 void setup(void);
 void parse(uint8_t dataByte);
 void process_packet(volatile command_packet *pkt);
-
+void parse_misc(volatile command_packet *pkt);
 
 
 
 // #########################################################
 // State machine Functions
 // #########################################################
+void parse_misc(volatile command_packet *pkt)
+{
+	// We can assume that pkt->command is WRITE_MISC at this point, no need to re-check.
+	switch (pkt->target)
+	{
+		case 0:  // Case 0 is control of the noise diode
+			if (pkt->value.value == 0)
+			{
+				ioport_set_pin_level(NOISE_DIODE_PS, 0);	
+			}
+			else
+			{
+				ioport_set_pin_level(NOISE_DIODE_PS, 1);	
+			}
+			debugUnique("OK: Set noise diode powersupply: %i", pkt->value.value);
+			break;
+		default:
+			debugUnique("ERROR: Unknown misc target val %i", pkt->target);
+			break;
+						
+	}
+}
 void process_packet(volatile command_packet *pkt)
 {
-
+	// TODO: Break all the sub-command parse bits into separate functions.
+	// Maybe inline them? Call overhead is probably pretty minor, not sure if worth bothering.
+	
+	Spi_Status tmp;
+	Si570_Status vfo_tmp;
 	switch (pkt->command)
 	{
-		case WRITE_ATTEN_1:
-			debugUnique("Atten Set 1 %i", pkt->value.value);
-			writeAttenuator(0, (uint8_t) pkt->value.value);
-			break;
+		case WRITE_ATTEN:
+			tmp = writeAttenuator((uint8_t) pkt->target, (uint8_t) pkt->value.value);
+			
+			if (tmp == SET_SUCCESS)
+			{
+				debugUnique("OK: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
+			}
+			else
+			{
+				debugUnique("ERROR: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
+			}
 
-		case WRITE_ATTEN_2:
-			debugUnique("Atten Set 2 %i", pkt->value.value);
-			writeAttenuator(1, (uint8_t) pkt->value.value);
-			break;
-
-		case WRITE_ATTEN_3:
-			debugUnique("Atten Set 3 %i", pkt->value.value);
-			writeAttenuator(2, (uint8_t) pkt->value.value);
 			break;
 
 
 		case WRITE_SWITCH:
-			debugUnique("Write Switch %i", pkt->value.value);
-			writeSwitch(0, (uint8_t) pkt->value.value);
-			break;
-
-		case WRITE_FREQ:
-			if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))
+			tmp = writeSwitch((uint8_t) pkt->target, (uint8_t) pkt->value.value);
+			
+			
+			if (tmp == SET_SUCCESS)
 			{
-				debugUnique("ERROR: Invalid Frequency:  %i", pkt->value.value);
+				debugUnique("OK: Write Switch %i", pkt->value.value);
 			}
 			else
 			{
-				vfo.setFrequency(pkt->value.value);
-				debugUnique("OK: Freq Set:  %i", pkt->value.value);
+				debugUnique("ERROR: Write Switch %i", pkt->value.value);
+			}
+
+			
+			break;
+
+		case WRITE_MISC:		
+			parse_misc(pkt);
+			break;
+
+		case WRITE_FREQ:
+			if (pkt->value.value == 0)
+			{
+				// A value of 0 disables the oscillator.
+				ioport_set_pin_level(OSC_EN, 0);				
+				
+			}
+			else if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))
+			{
+				debugUnique("ERROR: Invalid Frequency:  %i", pkt->value.value);
+			}
+			else if (pkt->target != 0)
+			{
+				debugUnique("ERROR: Invalid oscillator! Only one oscillator (0) currently supported:  %i", pkt->target);
+			}
+			else
+			{
+				// Ensure the oscillator is on before setting it.
+				ioport_set_pin_level(OSC_EN, 1);
+				
+				
+				vfo_tmp = vfo.setFrequency(pkt->value.value);
+				if (vfo_tmp == SI570_SUCCESS)
+				{
+					debugUnique("OK: Freq Set:  %i", pkt->value.value);	
+				}
+				else
+				{
+					debugUnique("ERROR: Freq Set:  %i", pkt->value.value);	
+				}
 			}
 		break;
 
@@ -144,18 +205,30 @@ void parse(uint8_t dataByte)
 	switch (state)
 	{
 		case NO_PACKET:
-		if (dataByte == PACKET_HEADER)
-		{
-			state = WAIT_COMMAND;
-			checksum += dataByte;
-		}
-		break;
+			if (dataByte == PACKET_HEADER)
+			{
+				state = WAIT_COMMAND;
+				checksum = dataByte;
+			}
+			else
+			{
+				debugUnique("Not start byte! Wat?");
+			}
+			break;
 
 		case WAIT_COMMAND:
 			packet.command = dataByte;
+			state = WAIT_TGT;
+			checksum += dataByte;
+			break;
+
+		case WAIT_TGT:
+			packet.target = dataByte;
 			state = WAIT_DATA_1;
 			checksum += dataByte;
 			break;
+
+
 
 		case WAIT_DATA_1:
 			packet.value.bytes[0] = dataByte;
@@ -335,85 +408,41 @@ int main (void)
 	vfo.initialize();
 	vfo.setFrequency(100E6);
 	
-	uint8_t state = 0;
+	
 
 	for (int x = 0; x < 6; x += 1)
 	{
 		writeAttenuator(x, 20);		
 	}	
 	
+	uint8_t led = 0;
+	
 	while (1)
 	{	
-		/*
+		
+		if (rxAvailable())
+		{
+			int tmp = rxRead();
+			if (tmp >= 0)
+			{
+				parse(tmp);
+			}
 			
-		for (int x = 0; x < 64; x += 1)
-		{
-			writeAttenuator(ATTENUATOR_REF_OSC, x);
-		
-			delay_ms(DELAY_INTERVAL);	
-		}
-		
-		if (!state)
-		{
-			enable(NOISE_DIODE_PS);
-			state = 1;
-		}
-		else
-		{	
-			disable(NOISE_DIODE_PS);
-			state = 0;
-		}
-		*/
-		
-		debugUnique("Switch state %i", state);
-		
-		disable(OSC_EN);
-		writeSwitch(MAIN_SWITCH, state);		
-		vfo.setFrequency(100E6 + (1e6*state));
-		delay_ms(1000);
-		
-		enable(OSC_EN);
-		
-		state += 1;
-		delay_ms(1000);
-		if (state > 1)
-		{
-			state = 0;
+			if (led)
+			{
+				led = 0;
+				
+				ioport_set_pin_level(LED_1, 1);
+			}
+			else
+			{
+				led = 1;
+				ioport_set_pin_level(LED_1, 0);
+				
+			}
 			
 		}
 		
-		
-		/*
-		writeAttenuator(0, 63);
-		writeAttenuator(1, 63);
-		writeAttenuator(2, 63);
-		writeAttenuator(3, 63);
-		writeAttenuator(4, 63);
-		writeAttenuator(5, 63);
-		writeAttenuator(6, 63);
-		*/
-		
-		/*
-		vfo.setFrequency(101E6);
-		delay_ms(DELAY_INTERVAL);
-		*/
-		
-		/*
-		ioport_set_pin_level(LED_1, 1);
-		delay_ms(DELAY_INTERVAL);
-		ioport_set_pin_level(LED_1, 0);
-
-		vfo.setFrequency(100E6);
-
-		ioport_set_pin_level(LED_1, 1);
-		delay_ms(DELAY_INTERVAL);
-		ioport_set_pin_level(LED_1, 0);
-
-
-		vfo.setFrequency(101E6);
-		*/
-
-
 	}
 	// Insert application code here, after the board has been initialized.
 }
