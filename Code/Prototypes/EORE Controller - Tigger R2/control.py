@@ -33,6 +33,14 @@ SWITCH_TONE_ATTEN     = 0x04   #
 MID_AMP_ATTEN         = 0x05   #
 
 
+# Convenience definitions for the switch inputs for the SP6T switch
+SW_MAIN_INPUT            = 0
+SW_DIRECT_REF_OSC        = 1
+SW_EMI_ANTENNA_IN        = 2
+SW_PILOT_TONE_IN         = 3
+SW_50R_TERMINATION       = 4
+SW_NOISE_DIODE           = 5
+
 
 #define WRITE_FREQ    0xC0
 
@@ -179,7 +187,7 @@ def go():
 	port.noiseDiodePowerCtl(1)
 	port.oscPowerCtl()
 
-	port.writeOscillator(0, 50e6)
+	port.writeOscillator(0, 100e6)
 	while 1:
 
 
@@ -206,22 +214,28 @@ def go():
 		# time.sleep(5)
 
 		# x = 0
+		# port.writeOscillator(0, 0)
 		while 1:
-			x = (x + 1) % len(vals)
-			port.writeSwitch(0, vals[x])
+			x = x % len(vals)
+			port.writeSwitch(0, 5)
+			print("Switch set to '%s'" % x)
 			# port.writeOscillator(0, 50e6+(10e6*vals[x]))
 
-			port.writeOscillator(0, 50e6)
-			time.sleep(1)
 
-			port.writeOscillator(0, 0)
-			time.sleep(1)
+			x += 1
+			raw_input(0)
 
 			port.noiseDiodePowerCtl(1)
 			time.sleep(1)
 
+
+			raw_input(0)
+
 			port.noiseDiodePowerCtl(0)
 			time.sleep(1)
+
+
+			raw_input(0)
 
 		# port.writeAtten(0, 0)
 		# time.sleep(1)
