@@ -216,25 +216,39 @@ def go():
 		# x = 0
 		# port.writeOscillator(0, 0)
 		while 1:
-			x = x % len(vals)
-			port.writeSwitch(0, 5)
-			print("Switch set to '%s'" % x)
-			# port.writeOscillator(0, 50e6+(10e6*vals[x]))
+			# x = x % len(vals)
+			port.writeSwitch(0, NOISE_SOURCE)
+			# print("Switch set to '%s'" % x)
+			# # port.writeOscillator(0, 50e6+(10e6*vals[x]))
 
 
-			x += 1
-			raw_input(0)
+			# x += 1
 
 			port.noiseDiodePowerCtl(1)
+			print("0 atteenuation, connected to powered on diode")
 			time.sleep(1)
 
+
+			raw_input(0)
+
+			port.writeAtten(NOISE_DIODE_ATTEN, 30)
+			print("30 atteenuation, connected to powered on diode")
 
 			raw_input(0)
 
 			port.noiseDiodePowerCtl(0)
+			print("30 atteenuation, connected to powered off diode")
 			time.sleep(1)
 
+			raw_input(0)
 
+			port.writeAtten(NOISE_DIODE_ATTEN, 0)
+			print("0 atteenuation, connected to powered off diode")
+
+			raw_input(0)
+
+			port.writeSwitch(0, SW_50R_TERMINATION)
+			print("Termination")
 			raw_input(0)
 
 		# port.writeAtten(0, 0)
