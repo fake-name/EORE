@@ -144,11 +144,11 @@ void process_packet(volatile command_packet *pkt)
 			
 			if (tmp == SET_SUCCESS)
 			{
-				debugUnique("OK: Write Switch %i", pkt->value.value);
+				debugUnique("OK: Write Switch %i -> %i", pkt->target, pkt->value.value);
 			}
 			else
 			{
-				debugUnique("ERROR: Write Switch %i", pkt->value.value);
+				debugUnique("ERROR: Write Switch %i -> %i", pkt->target, pkt->value.value);
 			}
 
 			

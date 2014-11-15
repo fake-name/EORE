@@ -1,15 +1,15 @@
 
 import time
 
-from controlApi import EoreController
+import eore
 import SignalHound as sh
 import logSetup
 
 
 
 ACQ_SPAN               = 27e6
-ACQ_REF_LEVEL_DB       = 20
-ACQ_ATTENUATION_DB     = 30
+ACQ_REF_LEVEL_DB       = -20
+ACQ_ATTENUATION_DB     = 20
 ACQ_GAIN_SETTING       = 0
 ACQ_RBW                = 2.465e3
 ACQ_VBW                = ACQ_RBW
@@ -64,7 +64,7 @@ class SweeperSignalHound(sh.SignalHound):
 		ret = max(trace['max'][binFreqCenter-3:binFreqCenter+4])
 
 		# print(traceSize, trace['max'].argmax(), binFreqCenter)
-		# print(ret, max(trace['max']))
+		print(ret, max(trace['max']))
 		# print(trace['max'][binFreqCenter-1:binFreqCenter+4])
 
 		return ret
@@ -106,36 +106,41 @@ def go():
 	# logSetup.initLogging()
 	print("Loggers initialized")
 	# port = EoreController("COM4")
-	port = EoreController("COM39")
+	port = eore.EoreController("COM40")
 	print("Port opened")
+
+	x = 0
+	port.writeAtten(eore.MAIN_TONE_ATTEN,       20)
+	port.writeAtten(eore.SWITCH_SWR_TONE_ATTEN, 10)
+	port.writeAtten(eore.NOISE_DIODE_ATTEN,     0)
+	port.writeAtten(eore.AUX_TONE_ATTEN,        0)
+	port.writeAtten(eore.SWITCH_TONE_ATTEN,     0)
+	port.writeAtten(eore.MID_AMP_ATTEN,         10)
+
+
+	port.writeSwitch(eore.MAIN_SW, eore.SW_MAIN_INPUT)
+	port.writeSwitch(eore.TONE_SW, eore.SW_TONE_SWR_COUPLER)
+
+	# port.writeAtten(2, 31.5)
+
+	port.writeOscillator(0, 100e6)
+
+	START = 100e6
+	STOP  = 200e6
+
+	# START = 195.0e6
+	# STOP  = 200.0e6
+	STEP  = 2.5e5
+
+
+	# while (1):
+	# return
+
 	hound = SweeperSignalHound()
 	print("SignalHound connected")
 	hound.setupSignalhound()
 	print("SignalHound configured")
 
-
-	x = 0
-	port.writeAtten(0, 0)
-	port.writeAtten(1, 0)
-	port.writeAtten(2, 0)
-
-	vals = [0,1,2,3,4,5]
-
-	port.writeSwitch(0, 0)
-
-	port.writeAtten(2, 31.5)
-
-	ret = port.writeOscillator(0, 15e6)
-
-	START = 150e6
-	STOP  = 150.01e6
-
-	# START = 195.0e6
-	# STOP  = 200.0e6
-	STEP  = 10
-
-
-	# while (1):
 
 	data = []
 
@@ -146,9 +151,9 @@ def go():
 		fp.write("# Step:  %s\n" % STEP)
 
 		for x in frange(START, STOP, STEP):
-
+			print("LOOPIN")
 			ret = port.writeOscillator(0, x)
-			time.sleep(0.020)
+			time.sleep(0.050)
 			# print(x, ret)
 			trace = hound.getPowerAtFreq(x)
 			# print(ret)

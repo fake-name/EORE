@@ -360,7 +360,7 @@ void Si570::qwrite_si570()
 #define fDCOMaxkHz 5670000  // Maximum DCO frequency in KHz
 
 // Locate an appropriate set of divisors (HSDiv and N1) give a desired output frequency
-int Si570::findDivisors(uint32_t fout)
+Si570_Status Si570::findDivisors(uint32_t fout)
 {
 	const uint16_t HS_DIV[] = {11, 9, 7, 6, 5, 4};
 	uint32_t fout_kHz = fout / 1000;
@@ -392,7 +392,7 @@ int Si570::findDivisors(uint32_t fout)
 }
 
 // Set RFREQ register (38 bits)
-void Si570::setRFREQ(uint32_t fnew)
+void Si570::calculateRFREQRegisters(uint32_t fnew)
 {
 	// Calculate new DCO frequency
 	fdco = (uint64_t) fnew * hs * n1;
@@ -425,19 +425,26 @@ void Si570::setRFREQ(uint32_t fnew)
 // Set the Si570 frequency
 Si570_Status Si570::setFrequency(uint32_t newfreq)
 {
+	Si570_Status status;
 	// If the current frequency has not changed, we are done
 	if (frequency == newfreq)
+	{
+		return SI570_SUCCESS;
+	}
+
+	// TODO: Status return for this function is currently garbage. Fix?
+
+	// otherwise it is a big jump and we need a new set of divisors and reset center frequency
+	status = findDivisors(newfreq);
+	if (status == SI570_ERROR)
+	{
 		return status;
-
-
-		// otherwise it is a big jump and we need a new set of divisors and reset center frequency
-		findDivisors(newfreq);
-		setRFREQ(newfreq);
-		f_center = frequency = newfreq;
-		// Calculate the new 3500 ppm delta
-		max_delta = ((uint64_t) f_center * 10035LL / 10000LL) - f_center;
-		write_si570();
+	}
+	
+	calculateRFREQRegisters(newfreq); // No return value
+	
+	write_si570();
 
 	DEBUG_PR("RFREQ (dec): %lu", newfreq); // DEBUG_PR ###
-	return status;
+	return SI570_SUCCESS;
 }

@@ -17,9 +17,9 @@ void spinWait(uint8_t cycles)
 	uint8_t loops;
 	for (loops = 0; loops < cycles; loops += 1)
 	{
-		loops += 1;		
+		loops += 1;
 	}
-	
+
 }
 
 Spi_Status writeAttenuator(uint8_t atten, uint8_t val)
@@ -86,28 +86,40 @@ Spi_Status writeAttenuator(uint8_t atten, uint8_t val)
 Spi_Status writeSwitch(uint8_t swNo, uint8_t val)
 {
 	// TODO: Sanity checking these inputs!
-	
-	// mask out the bits relevant to the switch in question, shift the in val 
+
+	// mask out the bits relevant to the switch in question, shift the in val
 	// to the right place, and then or them into place. Then, write that out to the sr.
 	switch (swNo)
 	{
 		case 0:
-			srState &= ~SW_1_MASK;
+			if (val > 7 || val == 6)
+				return SET_ERROR;
+
 			val <<= SW_1_bp;
+			val &= SW_1_MASK;
+			srState &= (~SW_1_MASK);
 			srState |= (val & SW_1_MASK);
+
+
 			break;
 		case 1:
-			srState &= ~SW_2_MASK;
+			if (val > 3)
+				return SET_ERROR;
+				
 			val <<= SW_2_bp;
-			srState |= (val & SW_2_MASK);		
+			val &= SW_2_MASK;
+			srState &= (~SW_2_MASK);
+			srState |= (val & SW_2_MASK);
+
+			break;
 	}
 	
-	spiWrite(val);
+	spiWrite(srState);
 	ioport_set_pin_level(CS_SW, 1);
 	spinWait(1);
 	ioport_set_pin_level(CS_SW, 0);
-	
-	
+
+
 	return SET_SUCCESS;
 
 
@@ -115,7 +127,7 @@ Spi_Status writeSwitch(uint8_t swNo, uint8_t val)
 
 void spiWrite(uint8_t data)
 {
-	
+
 	for (int loop = 0; loop < 8; loop += 1)
 	{
 		if (data & (1 << 7))
@@ -126,7 +138,7 @@ void spiWrite(uint8_t data)
 		{
 			ioport_set_pin_level(MOSI, 0);
 		}
-		
+
 		spinWait(1);
 		ioport_set_pin_level(SCK, 1);
 		spinWait(1);

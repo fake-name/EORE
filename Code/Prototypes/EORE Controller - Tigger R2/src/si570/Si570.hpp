@@ -50,8 +50,8 @@ private:
 	uint8_t getN1();
 	uint64_t getRFREQ();
 
-	void setRFREQ(uint32_t fnew);
-	int findDivisors(uint32_t f);
+	void calculateRFREQRegisters(uint32_t fnew);
+	Si570_Status findDivisors(uint32_t f);
 };
 
 
