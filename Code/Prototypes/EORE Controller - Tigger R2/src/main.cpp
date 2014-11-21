@@ -29,6 +29,7 @@
 
 #include "print/print.hpp"
 #include "si570/Si570.hpp"
+#include "tmp/tmp100.hpp"
 #include "spi/spi.hpp"
 #include "board/board.hpp"
 
@@ -42,6 +43,11 @@
 #define WRITE_MISC    0xDD
 
 Si570 vfo = Si570(SI570_I2C_ADDRESS, 56.320e6);
+
+
+// #define DEBUG_PR(x ...)  // Default to NO debug
+#define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
+
 
 // #########################################################
 // State machine typedefs and variables
@@ -100,32 +106,32 @@ void parse_misc(volatile command_packet *pkt)
 		case 0:  // Case 0 is control of the noise diode
 			if (pkt->value.value == 0)
 			{
-				ioport_set_pin_level(NOISE_DIODE_PS, 0);	
+				ioport_set_pin_level(NOISE_DIODE_PS, 0);
 			}
 			else
 			{
-				ioport_set_pin_level(NOISE_DIODE_PS, 1);	
+				ioport_set_pin_level(NOISE_DIODE_PS, 1);
 			}
 			debugUnique("OK: Set noise diode powersupply: %i", pkt->value.value);
 			break;
 		default:
 			debugUnique("ERROR: Unknown misc target val %i", pkt->target);
 			break;
-						
+
 	}
 }
 void process_packet(volatile command_packet *pkt)
 {
 	// TODO: Break all the sub-command parse bits into separate functions.
 	// Maybe inline them? Call overhead is probably pretty minor, not sure if worth bothering.
-	
+
 	Spi_Status tmp;
 	Si570_Status vfo_tmp;
 	switch (pkt->command)
 	{
 		case WRITE_ATTEN:
 			tmp = writeAttenuator((uint8_t) pkt->target, (uint8_t) pkt->value.value);
-			
+
 			if (tmp == SET_SUCCESS)
 			{
 				debugUnique("OK: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
@@ -140,8 +146,8 @@ void process_packet(volatile command_packet *pkt)
 
 		case WRITE_SWITCH:
 			tmp = writeSwitch((uint8_t) pkt->target, (uint8_t) pkt->value.value);
-			
-			
+
+
 			if (tmp == SET_SUCCESS)
 			{
 				debugUnique("OK: Write Switch %i -> %i", pkt->target, pkt->value.value);
@@ -151,10 +157,10 @@ void process_packet(volatile command_packet *pkt)
 				debugUnique("ERROR: Write Switch %i -> %i", pkt->target, pkt->value.value);
 			}
 
-			
+
 			break;
 
-		case WRITE_MISC:		
+		case WRITE_MISC:
 			parse_misc(pkt);
 			break;
 
@@ -162,8 +168,8 @@ void process_packet(volatile command_packet *pkt)
 			if (pkt->value.value == 0)
 			{
 				// A value of 0 disables the oscillator.
-				ioport_set_pin_level(OSC_EN, 0);				
-				
+				ioport_set_pin_level(OSC_EN, 0);
+
 			}
 			else if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))
 			{
@@ -177,16 +183,16 @@ void process_packet(volatile command_packet *pkt)
 			{
 				// Ensure the oscillator is on before setting it.
 				ioport_set_pin_level(OSC_EN, 1);
-				
-				
+
+
 				vfo_tmp = vfo.setFrequency(pkt->value.value);
 				if (vfo_tmp == SI570_SUCCESS)
 				{
-					debugUnique("OK: Freq Set:  %i", pkt->value.value);	
+					debugUnique("OK: Freq Set:  %i", pkt->value.value);
 				}
 				else
 				{
-					debugUnique("ERROR: Freq Set:  %i", pkt->value.value);	
+					debugUnique("ERROR: Freq Set:  %i", pkt->value.value);
 				}
 			}
 		break;
@@ -235,19 +241,19 @@ void parse(uint8_t dataByte)
 			state = WAIT_DATA_2;
 			checksum += dataByte;
 			break;
-			
+
 		case WAIT_DATA_2:
 			packet.value.bytes[1] = dataByte;
 			state = WAIT_DATA_3;
 			checksum += dataByte;
 			break;
-		
+
 		case WAIT_DATA_3:
 			packet.value.bytes[2] = dataByte;
 			state = WAIT_DATA_4;
 			checksum += dataByte;
 			break;
-		
+
 		case WAIT_DATA_4:
 
 			packet.value.bytes[3] = dataByte;
@@ -264,7 +270,7 @@ void parse(uint8_t dataByte)
 			}
 			else
 			{
-				
+
 				debugUnique("Invalid checksum!");
 				debugUnique("Should be  %i, received %i.", checksum, dataByte);
 			}
@@ -391,11 +397,20 @@ void setup(void)
 
 	usart_enable_tx(DEBUG_UART);
 	usart_enable_rx(DEBUG_UART);
-	
+
 	usart_enable_interrupt(DEBUG_UART, US_IER_RXRDY);
 	NVIC_EnableIRQ(UART3_IRQn);
-	
+
 	cpu_irq_enable();
+
+
+	for (uint8_t cnt = 0; cnt <= 8; cnt++)
+	{
+		initialize_tmp100(cnt);
+		delay_ms(20);
+	}
+
+
 
 }
 
@@ -404,22 +419,22 @@ int main (void)
 {
 	setup();
 
-	
+
 	vfo.initialize();
 	vfo.setFrequency(100E6);
-	
-	
+
+
 
 	for (int x = 0; x < 6; x += 1)
 	{
-		writeAttenuator(x, 20);		
-	}	
-	
+		writeAttenuator(x, 20);
+	}
+
 	uint8_t led = 0;
-	
+
 	while (1)
-	{	
-		
+	{
+
 		if (rxAvailable())
 		{
 			int tmp = rxRead();
@@ -427,22 +442,38 @@ int main (void)
 			{
 				parse(tmp);
 			}
-			
+
 			if (led)
 			{
 				led = 0;
-				
+
 				ioport_set_pin_level(LED_1, 1);
 			}
 			else
 			{
 				led = 1;
 				ioport_set_pin_level(LED_1, 0);
-				
+
 			}
-			
+
 		}
-		
+
+		uint16_t tempval;
+		for (uint8_t cnt = 0; cnt <= 8; cnt++)
+		{
+			tempval = 0;
+			read_temp(cnt, &tempval);
+
+			DEBUG_PR("Read bytes: %X, %X ", ((uint8_t*) &tempval)[0], ((uint8_t*) &tempval)[1]);
+			DEBUG_PR("Read bytes: %X", tempval);
+
+			delay_ms(5);
+			float calc = ((int16_t) tempval) >> 4;
+			calc = 0.0628 * calc;
+
+			DEBUG_PR("TMP sensor %i reading: %i, %f", cnt, tempval, calc);
+		}
+		delay_ms(500);
 	}
 	// Insert application code here, after the board has been initialized.
 }

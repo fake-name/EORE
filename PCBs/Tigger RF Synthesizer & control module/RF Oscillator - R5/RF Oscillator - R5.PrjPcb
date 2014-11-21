@@ -303,10 +303,6 @@ DItemRevisionGUID=
 DocumentPath=Project Outputs for RF Oscillator - R5\Main.RUL
 DItemRevisionGUID=
 
-[GeneratedDocument17]
-DocumentPath=Project Outputs for RF Oscillator - R5\Main.TXT
-DItemRevisionGUID=
-
 [Configuration1]
 Name=Default Configuration
 ParameterCount=0
