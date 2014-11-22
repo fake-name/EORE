@@ -10,13 +10,7 @@
  *
  * \par Empty user application template
  *
- * Bare minimum empty user application template
  *
- * \par Content
- *
- * -# Include the ASF header files (through asf.h)
- * -# Minimal main function that starts with a call to board_init()
- * -# "Insert application code here" comment
  *
  */
 
@@ -27,22 +21,15 @@
  #include <asf.h>
  #include <string.h>
 
+#include "parse.hpp"
+
 #include "print/print.hpp"
 #include "si570/Si570.hpp"
 #include "tmp/tmp100.hpp"
 #include "spi/spi.hpp"
 #include "board/board.hpp"
+#include "pwm/pwm.hpp"
 
-#define DELAY_INTERVAL   100
-#define TWI_SPEED        400000
-
-#define PACKET_HEADER 0x5D
-#define WRITE_ATTEN   0xAA
-#define WRITE_SWITCH  0x0C
-#define WRITE_FREQ    0xC0
-#define WRITE_MISC    0xDD
-
-Si570 vfo = Si570(SI570_I2C_ADDRESS, 56.320e6);
 
 
 // #define DEBUG_PR(x ...)  // Default to NO debug
@@ -50,240 +37,14 @@ Si570 vfo = Si570(SI570_I2C_ADDRESS, 56.320e6);
 
 
 // #########################################################
-// State machine typedefs and variables
-// #########################################################
-typedef enum
-{
-	NO_PACKET,
-	WAIT_COMMAND,
-	WAIT_TGT,
-	WAIT_DATA_1,
-	WAIT_DATA_2,
-	WAIT_DATA_3,
-	WAIT_DATA_4,
-	WAIT_CHECKSUM,
-
-	PACKET_VALID
-} sysState;
-
-typedef union UnionU32_t
-{
-	uint8_t  bytes[4];
-	uint32_t value;
-} unionU32_t;
-
-typedef struct
-{
-	uint8_t command;
-	uint8_t target;
-	unionU32_t value;
-} command_packet;
-
-
-volatile uint8_t checksum = 0;
-volatile command_packet packet = {0, 0, 0};
-volatile sysState state = NO_PACKET;
-
-
-// #########################################################
 // Local forward-definitions
 // #########################################################
 void setup(void);
-void parse(uint8_t dataByte);
-void process_packet(volatile command_packet *pkt);
-void parse_misc(volatile command_packet *pkt);
-
 
 
 // #########################################################
-// State machine Functions
+// Global variables
 // #########################################################
-void parse_misc(volatile command_packet *pkt)
-{
-	// We can assume that pkt->command is WRITE_MISC at this point, no need to re-check.
-	switch (pkt->target)
-	{
-		case 0:  // Case 0 is control of the noise diode
-			if (pkt->value.value == 0)
-			{
-				ioport_set_pin_level(NOISE_DIODE_PS, 0);
-			}
-			else
-			{
-				ioport_set_pin_level(NOISE_DIODE_PS, 1);
-			}
-			debugUnique("OK: Set noise diode powersupply: %i", pkt->value.value);
-			break;
-		default:
-			debugUnique("ERROR: Unknown misc target val %i", pkt->target);
-			break;
-
-	}
-}
-void process_packet(volatile command_packet *pkt)
-{
-	// TODO: Break all the sub-command parse bits into separate functions.
-	// Maybe inline them? Call overhead is probably pretty minor, not sure if worth bothering.
-
-	Spi_Status tmp;
-	Si570_Status vfo_tmp;
-	switch (pkt->command)
-	{
-		case WRITE_ATTEN:
-			tmp = writeAttenuator((uint8_t) pkt->target, (uint8_t) pkt->value.value);
-
-			if (tmp == SET_SUCCESS)
-			{
-				debugUnique("OK: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
-			}
-			else
-			{
-				debugUnique("ERROR: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
-			}
-
-			break;
-
-
-		case WRITE_SWITCH:
-			tmp = writeSwitch((uint8_t) pkt->target, (uint8_t) pkt->value.value);
-
-
-			if (tmp == SET_SUCCESS)
-			{
-				debugUnique("OK: Write Switch %i -> %i", pkt->target, pkt->value.value);
-			}
-			else
-			{
-				debugUnique("ERROR: Write Switch %i -> %i", pkt->target, pkt->value.value);
-			}
-
-
-			break;
-
-		case WRITE_MISC:
-			parse_misc(pkt);
-			break;
-
-		case WRITE_FREQ:
-			if (pkt->value.value == 0)
-			{
-				// A value of 0 disables the oscillator.
-				ioport_set_pin_level(OSC_EN, 0);
-
-			}
-			else if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))
-			{
-				debugUnique("ERROR: Invalid Frequency:  %i", pkt->value.value);
-			}
-			else if (pkt->target != 0)
-			{
-				debugUnique("ERROR: Invalid oscillator! Only one oscillator (0) currently supported:  %i", pkt->target);
-			}
-			else
-			{
-				// Ensure the oscillator is on before setting it.
-				ioport_set_pin_level(OSC_EN, 1);
-
-
-				vfo_tmp = vfo.setFrequency(pkt->value.value);
-				if (vfo_tmp == SI570_SUCCESS)
-				{
-					debugUnique("OK: Freq Set:  %i", pkt->value.value);
-				}
-				else
-				{
-					debugUnique("ERROR: Freq Set:  %i", pkt->value.value);
-				}
-			}
-		break;
-
-		default:
-			debugUnique("Error! Unknown command!");
-			break;
-	}
-
-
-}
-
-
-void parse(uint8_t dataByte)
-{
-	switch (state)
-	{
-		case NO_PACKET:
-			if (dataByte == PACKET_HEADER)
-			{
-				state = WAIT_COMMAND;
-				checksum = dataByte;
-			}
-			else
-			{
-				debugUnique("Not start byte! Wat?");
-			}
-			break;
-
-		case WAIT_COMMAND:
-			packet.command = dataByte;
-			state = WAIT_TGT;
-			checksum += dataByte;
-			break;
-
-		case WAIT_TGT:
-			packet.target = dataByte;
-			state = WAIT_DATA_1;
-			checksum += dataByte;
-			break;
-
-
-
-		case WAIT_DATA_1:
-			packet.value.bytes[0] = dataByte;
-			state = WAIT_DATA_2;
-			checksum += dataByte;
-			break;
-
-		case WAIT_DATA_2:
-			packet.value.bytes[1] = dataByte;
-			state = WAIT_DATA_3;
-			checksum += dataByte;
-			break;
-
-		case WAIT_DATA_3:
-			packet.value.bytes[2] = dataByte;
-			state = WAIT_DATA_4;
-			checksum += dataByte;
-			break;
-
-		case WAIT_DATA_4:
-
-			packet.value.bytes[3] = dataByte;
-			state = WAIT_CHECKSUM;
-			checksum += dataByte;
-			break;
-
-		case WAIT_CHECKSUM:
-
-			if (dataByte ==  checksum)
-			{
-				state = PACKET_VALID;
-				process_packet(&packet);
-			}
-			else
-			{
-
-				debugUnique("Invalid checksum!");
-				debugUnique("Should be  %i, received %i.", checksum, dataByte);
-			}
-			// Falls through to default (intentionally)!
-		default:
-			debugUnique("Rx Complete");
-			state = NO_PACKET;
-			checksum = 0;
-			break;
-	}
-
-}
-
 
 
 
@@ -292,9 +53,8 @@ ISR(HardFault_Handler)
 
 	ioport_set_pin_level(LED_4, 1);
 	while (1) {
-    }
+	}
 }
-
 
 
 
@@ -312,6 +72,7 @@ void setup(void)
 
 	/* =============== General IO Setup =============== */
 
+	ioport_set_pin_dir(HEATER_OLD, IOPORT_DIR_INPUT);
 	ioport_set_pin_dir(HEATER_ON, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(OSC_EN, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(NOISE_DIODE_PS, IOPORT_DIR_OUTPUT);
@@ -340,6 +101,9 @@ void setup(void)
 	// Serial Interface
 	pio_configure_pin_group(PIOB, PIO_PB10B_URXD3, PIO_TYPE_PIO_PERIPH_B);
 	pio_configure_pin_group(PIOB, PIO_PB11B_UTXD3, PIO_TYPE_PIO_PERIPH_B);
+
+	// PWM Interface
+	pio_configure_pin_group(PIOA, PIO_PA2A_PWM2,  PIO_TYPE_PIO_PERIPH_A);
 
 
 	/* =============== TWI Setup =============== */
@@ -401,7 +165,7 @@ void setup(void)
 	usart_enable_interrupt(DEBUG_UART, US_IER_RXRDY);
 	NVIC_EnableIRQ(UART3_IRQn);
 
-	cpu_irq_enable();
+
 
 
 	for (uint8_t cnt = 0; cnt <= 8; cnt++)
@@ -411,17 +175,47 @@ void setup(void)
 	}
 
 
+	/* =============== Debug UART Setup =============== */
 
+
+	pmc_enable_periph_clk(ID_PWM);
+	pwm_channel_disable(PWM, PWM_CHANNEL_2);  // Precautionary disable.
+
+
+	pwm_clock_t clock_setting;
+	clock_setting.ul_clka = 1000;           // 1 Hz PWM(it's sloooooow)
+	clock_setting.ul_clkb = 0;
+	clock_setting.ul_mck = sysclk_get_cpu_hz();
+
+	pwm_init(PWM, &clock_setting);
+
+	pwm_channel_t pwm_channel_instance;
+
+	pwm_channel_instance.ul_prescaler = PWM_CMR_CPRE_CLKA;
+	pwm_channel_instance.ul_period = 1000;
+	pwm_channel_instance.ul_duty = 500;
+	pwm_channel_instance.channel = PWM_CHANNEL_2;
+
+	pwm_channel_init(PWM, &pwm_channel_instance);
+
+
+	// Enable interrupt, and in the NVIC.
+	pwm_channel_enable_interrupt(PWM, PWM_CHANNEL_2, 0);
+	NVIC_EnableIRQ(PWM_IRQn);
+
+
+	pwm_channel_enable(PWM, PWM_CHANNEL_2);
+
+	setup_vfo();
+
+	// Finally, turn on the interrupts.
+	cpu_irq_enable();
 }
 
 
 int main (void)
 {
 	setup();
-
-
-	vfo.initialize();
-	vfo.setFrequency(100E6);
 
 
 
@@ -459,13 +253,10 @@ int main (void)
 		}
 
 		uint16_t tempval;
-		for (uint8_t cnt = 0; cnt <= 8; cnt++)
 		{
+			uint8_t cnt = 1;
 			tempval = 0;
 			read_temp(cnt, &tempval);
-
-			DEBUG_PR("Read bytes: %X, %X ", ((uint8_t*) &tempval)[0], ((uint8_t*) &tempval)[1]);
-			DEBUG_PR("Read bytes: %X", tempval);
 
 			delay_ms(5);
 			float calc = ((int16_t) tempval) >> 4;

@@ -15,8 +15,8 @@
 int sensor_to_address(uint8_t sensorNo);
 void set_remote_addr(uint8_t addr);
 
-// #define DEBUG_PR(x ...)  // Default to NO debug
-#define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
+#define DEBUG_PR(x ...)  // Default to NO debug
+// #define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
 
 
 
