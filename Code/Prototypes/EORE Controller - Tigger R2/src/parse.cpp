@@ -71,6 +71,25 @@ void parse_misc(volatile command_packet *pkt)
 
 	}
 }
+
+void parse_temp(volatile command_packet *pkt)
+{
+
+	switch (pkt->target)
+	{
+		case 0:  // Case 0 is control of the noise diode
+			float temp;
+			temp = 0.0625 * pkt->value.value;
+			setTemperature(temp);
+			debugUnique("OK: Set temperature: %f", temp);
+			break;
+		default:
+			debugUnique("ERROR: Unknown temp target %i", pkt->target);
+			break;
+
+	}
+}
+
 void process_packet(volatile command_packet *pkt)
 {
 	// TODO: Break all the sub-command parse bits into separate functions.
@@ -109,6 +128,10 @@ void process_packet(volatile command_packet *pkt)
 			}
 
 
+			break;
+
+		case WRITE_TEMP:
+			parse_temp(pkt);
 			break;
 
 		case WRITE_MISC:

@@ -11,6 +11,7 @@
 #define WRITE_SWITCH  0x0C
 #define WRITE_FREQ    0xC0
 #define WRITE_MISC    0xDD
+#define WRITE_TEMP    0x22
 
 // #########################################################
 // State machine typedefs and variables

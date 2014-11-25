@@ -10,6 +10,7 @@
 #define PWM_H_
 
 void setupPwm(void);
+void setTemperature(float setpoint);
 
 // This will be SLOW. However, it's only firing 1 time per second, so we don't care.
 typedef struct

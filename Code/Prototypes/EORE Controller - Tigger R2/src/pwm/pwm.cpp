@@ -45,7 +45,7 @@ double UpdatePID(volatile SPid * pid, double error, double position)
 
 void setupPwm(void)
 {
-	pwm_setpoint = 40;  // 40°c
+	pwm_setpoint = 0;  // 40°c
 	pwm_state.pGain = 100;
 	pwm_state.iGain = 2;
 	pwm_state.dGain = 10;
@@ -63,6 +63,12 @@ void setupPwm(void)
 
 }
 
+// Update the PID control loop target temperature
+// setpoint is in °C.
+void setTemperature(float setpoint)
+{
+	pwm_setpoint = (double) setpoint;
+}
 
 // Hooked up to the interrupt through some bizarre forward-define
 // magic in the ASF headers.
@@ -95,6 +101,12 @@ void PWM_Handler(void)
 		newPwm = 1000;
 	}
 
+	// Disable the PWM output if the temperature is 0
+	if (setTemperature <= 0)
+	{
+		newPwm = 1000;
+	}
+
 	// The PWM output is inverted (high is off, low is on)
 	// so we invert the control signal.
 	newPwm = 1000-newPwm;
@@ -103,7 +115,6 @@ void PWM_Handler(void)
 
 	// DEBUG_PR("TMP reading: %i, %f. PID: %f, %i, err: %f. PWM: %i", tempval, calc, ret, (uint16_t)ret, err, newPwm);
 	DEBUG_PR("%f,%f,%f,%i", calc, ret, err, newPwm);
-
 
 	// Finally, clear the interrupt.
 	pwm_channel_get_interrupt_status(PWM);
