@@ -6,9 +6,6 @@
 // State machine constants
 // #########################################################
 
-#define DELAY_INTERVAL   100
-#define TWI_SPEED        400000
-
 #define PACKET_HEADER 0x5D
 #define WRITE_ATTEN   0xAA
 #define WRITE_SWITCH  0x0C

@@ -38,4 +38,9 @@
 #define ATTENUATOR_AUX_TONE             5
 
 
+#define DELAY_INTERVAL   100
+#define TWI_SPEED        400000
+
+void setup(void);
+
 #endif /* BOARD_H_ */
