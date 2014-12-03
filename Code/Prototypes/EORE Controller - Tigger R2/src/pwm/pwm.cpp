@@ -45,7 +45,7 @@ double UpdatePID(volatile SPid * pid, double error, double position)
 
 void setupPwm(void)
 {
-	pwm_setpoint = 0;  // 40°c
+	pwm_setpoint = 0;
 	pwm_state.pGain = 100;
 	pwm_state.iGain = 2;
 	pwm_state.dGain = 10;
@@ -65,10 +65,56 @@ void setupPwm(void)
 
 // Update the PID control loop target temperature
 // setpoint is in °C.
-void setTemperature(float setpoint)
+void set_temperature(float setpoint)
 {
+	cpu_irq_disable();
 	pwm_setpoint = (double) setpoint;
+	cpu_irq_enable();
 }
+
+void set_pid_kp(float setpoint)
+{
+	cpu_irq_disable();
+	pwm_state.pGain = (double) setpoint;
+	cpu_irq_enable();
+}
+void set_pid_ki(float setpoint)
+{
+	cpu_irq_disable();
+	pwm_state.iGain = (double) setpoint;
+	cpu_irq_enable();
+}
+void set_pid_kd(float setpoint)
+{
+	cpu_irq_disable();
+	pwm_state.dGain = (double) setpoint;
+	cpu_irq_enable();
+}
+
+
+
+
+float getTemperature(void)
+{
+	return (float) pwm_setpoint;
+}
+
+float get_pid_kp(void)
+{
+	return (float) pwm_state.pGain;
+}
+float get_pid_ki(void)
+{
+	return (float) pwm_state.iGain;
+}
+float get_pid_kd(void)
+{
+	return (float) pwm_state.dGain;
+}
+
+
+
+
 
 // Hooked up to the interrupt through some bizarre forward-define
 // magic in the ASF headers.
@@ -101,15 +147,16 @@ void PWM_Handler(void)
 		newPwm = 1000;
 	}
 
-	// Disable the PWM output if the temperature is 0
-	if (setTemperature <= 0)
-	{
-		newPwm = 1000;
-	}
 
 	// The PWM output is inverted (high is off, low is on)
 	// so we invert the control signal.
 	newPwm = 1000-newPwm;
+
+	// Disable the PWM output if the temperature is 0
+	if (pwm_setpoint <= 0)
+	{
+		newPwm = 1000;
+	}
 
 	pwm_channel_update_duty(PWM, &pwm_channel_instance, newPwm);
 

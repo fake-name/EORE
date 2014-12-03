@@ -10,7 +10,6 @@
 #define PWM_H_
 
 void setupPwm(void);
-void setTemperature(float setpoint);
 
 // This will be SLOW. However, it's only firing 1 time per second, so we don't care.
 typedef struct
@@ -27,6 +26,16 @@ typedef struct
 	double dGain; // derivative gain
 } SPid;
 
+
+
+void set_temperature(float setpoint);
+void set_pid_kp(float setpoint);
+void set_pid_ki(float setpoint);
+void set_pid_kd(float setpoint);
+float get_temperature(void);
+float get_pid_kp(void);
+float get_pid_ki(void);
+float get_pid_kd(void);
 
 
 #endif /* PWM_H_ */

@@ -47,9 +47,9 @@ Si570 vfo = Si570(SI570_I2C_ADDRESS, 56.320e6);
 
 
 // #########################################################
-// State machine Functions
+// State machine convenience Functions
 // #########################################################
-void parse_misc(volatile command_packet *pkt)
+inline void parse_misc(volatile command_packet *pkt)
 {
 	// We can assume that pkt->command is WRITE_MISC at this point, no need to re-check.
 	switch (pkt->target)
@@ -72,15 +72,15 @@ void parse_misc(volatile command_packet *pkt)
 	}
 }
 
-void parse_temp(volatile command_packet *pkt)
+inline void parse_temp(volatile command_packet *pkt)
 {
 
 	switch (pkt->target)
 	{
-		case 0:  // Case 0 is control of the noise diode
+		case 0:  // Case 0 is set temperature
 			float temp;
 			temp = 0.0625 * pkt->value.value;
-			setTemperature(temp);
+			set_temperature(temp);
 			debugUnique("OK: Set temperature: %f", temp);
 			break;
 		default:
@@ -90,44 +90,90 @@ void parse_temp(volatile command_packet *pkt)
 	}
 }
 
+
+inline void parse_switch(volatile command_packet *pkt)
+{
+	Spi_Status tmp;
+	tmp = writeSwitch((uint8_t) pkt->target, (uint8_t) pkt->value.value);
+
+	if (tmp == SET_SUCCESS)
+	{
+		debugUnique("OK: Write Switch %i -> %i", pkt->target, pkt->value.value);
+	}
+	else
+	{
+		debugUnique("ERROR: Write Switch %i -> %i", pkt->target, pkt->value.value);
+	}
+}
+
+inline void parse_atten(volatile command_packet *pkt)
+{
+	Spi_Status tmp;
+	tmp = writeAttenuator((uint8_t) pkt->target, (uint8_t) pkt->value.value);
+
+	if (tmp == SET_SUCCESS)
+	{
+		debugUnique("OK: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
+	}
+	else
+	{
+		debugUnique("ERROR: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
+	}
+}
+
+inline void parse_vfo(volatile command_packet *pkt)
+{
+
+	if (pkt->value.value == 0)
+	{
+		// A value of 0 disables the oscillator.
+		ioport_set_pin_level(OSC_EN, 0);
+
+	}
+	else if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))
+	{
+		debugUnique("ERROR: Invalid Frequency:  %i", pkt->value.value);
+	}
+	else if (pkt->target != 0)
+	{
+		debugUnique("ERROR: Invalid oscillator! Only one oscillator (0) currently supported:  %i", pkt->target);
+	}
+	else
+	{
+
+		Si570_Status vfo_tmp;
+		// Ensure the oscillator is on before setting it.
+		ioport_set_pin_level(OSC_EN, 1);
+
+
+		vfo_tmp = vfo.setFrequency(pkt->value.value);
+		if (vfo_tmp == SI570_SUCCESS)
+		{
+			debugUnique("OK: Freq Set:  %i", pkt->value.value);
+		}
+		else
+		{
+			debugUnique("ERROR: Freq Set:  %i", pkt->value.value);
+		}
+	}
+}
+
+
+// #########################################################
+// Process a complete and valid packet.
+// #########################################################
 void process_packet(volatile command_packet *pkt)
 {
-	// TODO: Break all the sub-command parse bits into separate functions.
-	// Maybe inline them? Call overhead is probably pretty minor, not sure if worth bothering.
 
-	Spi_Status tmp;
-	Si570_Status vfo_tmp;
+
 	switch (pkt->command)
 	{
 		case WRITE_ATTEN:
-			tmp = writeAttenuator((uint8_t) pkt->target, (uint8_t) pkt->value.value);
-
-			if (tmp == SET_SUCCESS)
-			{
-				debugUnique("OK: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
-			}
-			else
-			{
-				debugUnique("ERROR: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
-			}
-
+			parse_atten(pkt);
 			break;
 
-
 		case WRITE_SWITCH:
-			tmp = writeSwitch((uint8_t) pkt->target, (uint8_t) pkt->value.value);
-
-
-			if (tmp == SET_SUCCESS)
-			{
-				debugUnique("OK: Write Switch %i -> %i", pkt->target, pkt->value.value);
-			}
-			else
-			{
-				debugUnique("ERROR: Write Switch %i -> %i", pkt->target, pkt->value.value);
-			}
-
-
+			parse_switch(pkt);
 			break;
 
 		case WRITE_TEMP:
@@ -139,40 +185,11 @@ void process_packet(volatile command_packet *pkt)
 			break;
 
 		case WRITE_FREQ:
-			if (pkt->value.value == 0)
-			{
-				// A value of 0 disables the oscillator.
-				ioport_set_pin_level(OSC_EN, 0);
-
-			}
-			else if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))
-			{
-				debugUnique("ERROR: Invalid Frequency:  %i", pkt->value.value);
-			}
-			else if (pkt->target != 0)
-			{
-				debugUnique("ERROR: Invalid oscillator! Only one oscillator (0) currently supported:  %i", pkt->target);
-			}
-			else
-			{
-				// Ensure the oscillator is on before setting it.
-				ioport_set_pin_level(OSC_EN, 1);
-
-
-				vfo_tmp = vfo.setFrequency(pkt->value.value);
-				if (vfo_tmp == SI570_SUCCESS)
-				{
-					debugUnique("OK: Freq Set:  %i", pkt->value.value);
-				}
-				else
-				{
-					debugUnique("ERROR: Freq Set:  %i", pkt->value.value);
-				}
-			}
+			parse_vfo(pkt);
 		break;
 
 		default:
-			debugUnique("Error! Unknown command!");
+			debugUnique("ERROR! Unknown command!");
 			break;
 	}
 
@@ -180,6 +197,10 @@ void process_packet(volatile command_packet *pkt)
 }
 
 
+// #########################################################
+// State machine main parse call.
+// called for each received byte.
+// #########################################################
 void parse(uint8_t dataByte)
 {
 	switch (state)
@@ -192,7 +213,7 @@ void parse(uint8_t dataByte)
 			}
 			else
 			{
-				debugUnique("Not start byte! Wat?");
+				debugUnique("ERROR! Not start byte! Wat?");
 			}
 			break;
 
@@ -245,12 +266,11 @@ void parse(uint8_t dataByte)
 			else
 			{
 
-				debugUnique("Invalid checksum!");
+				debugUnique("ERROR! Invalid checksum!");
 				debugUnique("Should be  %i, received %i.", checksum, dataByte);
 			}
 			// Falls through to default (intentionally)!
 		default:
-			debugUnique("Rx Complete");
 			state = NO_PACKET;
 			checksum = 0;
 			break;
