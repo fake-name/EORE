@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to the EORE-Project / TiggerAPI documentation! &mdash; TiggerAPI 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="TiggerAPI 0.0.1 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">TiggerAPI 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-the-eore-project-tiggerapi-documentation">
+<h1>Welcome to the EORE-Project / TiggerAPI documentation!<a class="headerlink" href="#welcome-to-the-eore-project-tiggerapi-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<dl class="class">
+<dt id="eore.EoreController">
+<em class="property">class </em><tt class="descclassname">eore.</tt><tt class="descname">EoreController</tt><big>(</big><em>portName</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for interfacing with the EORE Controller PCB (E.g. the &#8220;tigger&#8221; board)</p>
+<dl class="method">
+<dt id="eore.EoreController.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>portName</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create instance of the <tt class="docutils literal"><span class="pre">EoreController</span></tt> class for the remote controller connected to <tt class="docutils literal"><span class="pre">portName</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">portName</span></tt> is an ascii string containing the windows com-port name, e.g. <tt class="docutils literal"><span class="pre">COM4</span></tt>, <tt class="docutils literal"><span class="pre">COM15</span></tt>, etc...</p>
+<p>If <tt class="docutils literal"><span class="pre">portName</span></tt> is not a valid port, a <tt class="docutils literal"><span class="pre">serial.serialutil.SerialException</span></tt> will be raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.disableOscillator">
+<tt class="descname">disableOscillator</tt><big>(</big><em>osc=0</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.disableOscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.disableOscillator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method. Turns off the oscillator <tt class="docutils literal"><span class="pre">osc</span></tt>.</p>
+<p>To re-enable the oscillator, you call <tt class="docutils literal"><span class="pre">writeOscillator</span></tt> with a non-zero frequency.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.noiseDiodePowerCtl">
+<tt class="descname">noiseDiodePowerCtl</tt><big>(</big><em>on=False</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.noiseDiodePowerCtl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.noiseDiodePowerCtl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send command to enable/disable the noise-diode power supply.</p>
+<p>Tf <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>, the noise diode will be enabled. If <tt class="docutils literal"><span class="pre">on</span></tt> is false, it will be turned off.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.writeAtten">
+<tt class="descname">writeAtten</tt><big>(</big><em>atten</em>, <em>value</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeAtten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeAtten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send command to set the attenuator <tt class="docutils literal"><span class="pre">atten</span></tt> to an attenuation level of <tt class="docutils literal"><span class="pre">value</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">atten</span></tt> should be one of the constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
+<p><tt class="docutils literal"><span class="pre">value</span></tt> is the desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.
+Specified values are rounded to the nearest 0.5 dB interval.
+Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"><span class="pre">ValueError</span></tt>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">atten</span></tt> value is invalid, it will also raise a <tt class="docutils literal"><span class="pre">ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.writeOscillator">
+<tt class="descname">writeOscillator</tt><big>(</big><em>osc</em>, <em>freq</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeOscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeOscillator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set oscillator <tt class="docutils literal"><span class="pre">osc</span></tt> to output frequency <tt class="docutils literal"><span class="pre">freq</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">freq</span></tt> must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator
+off entirely.</p>
+<p>Note that the <tt class="docutils literal"><span class="pre">disableOscillator</span></tt> call actually just calls this function, with the frequency hard-coded to <tt class="docutils literal"><span class="pre">0</span></tt>.</p>
+<p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> for frequencies outside the valid range, or invalid oscillator values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.writeSwitch">
+<tt class="descname">writeSwitch</tt><big>(</big><em>switchNo</em>, <em>chan</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeSwitch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeSwitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send command to set <tt class="docutils literal"><span class="pre">switchNo</span></tt> to <tt class="docutils literal"><span class="pre">chan</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">chan</span></tt> and <tt class="docutils literal"><span class="pre">switchNo</span></tt> should be one of the constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
+<p>Raises ValueError if the switch number or channel is invalid.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-eore"></span><dl class="data">
+<dt id="eore.AUX_TONE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_ATTEN</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.AUX_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Secondary tone attenuator (on EORE board)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.AUX_TONE_INPUT">
+<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_INPUT</tt><em class="property"> = 3</em><a class="headerlink" href="#eore.AUX_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Auxiliary tone/pilot tone input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.EMI_ANTENNA">
+<tt class="descclassname">eore.</tt><tt class="descname">EMI_ANTENNA</tt><em class="property"> = 2</em><a class="headerlink" href="#eore.EMI_ANTENNA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Local EMI antenna input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.MAIN_ANTENNA">
+<tt class="descclassname">eore.</tt><tt class="descname">MAIN_ANTENNA</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_ANTENNA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Main input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.MAIN_TONE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">MAIN_TONE_ATTEN</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Main tone attenuator (on tigger board)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.MID_AMP_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">MID_AMP_ATTEN</tt><em class="property"> = 5</em><a class="headerlink" href="#eore.MID_AMP_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Attenuator between the two onboard LNA</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.NOISE_DIODE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">NOISE_DIODE_ATTEN</tt><em class="property"> = 2</em><a class="headerlink" href="#eore.NOISE_DIODE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Noise diode output attenuator</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.NOISE_SOURCE">
+<tt class="descclassname">eore.</tt><tt class="descname">NOISE_SOURCE</tt><em class="property"> = 5</em><a class="headerlink" href="#eore.NOISE_SOURCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Noise diode input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.SWITCHED_TONE_INPUT">
+<tt class="descclassname">eore.</tt><tt class="descname">SWITCHED_TONE_INPUT</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.SWITCHED_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - SWR tone pass-through input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.SWITCH_SHUTDOWN">
+<tt class="descclassname">eore.</tt><tt class="descname">SWITCH_SHUTDOWN</tt><em class="property"> = 7</em><a class="headerlink" href="#eore.SWITCH_SHUTDOWN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Switch disabled (in reflective mode?)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.SWITCH_SWR_TONE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">SWITCH_SWR_TONE_ATTEN</tt><em class="property"> = 3</em><a class="headerlink" href="#eore.SWITCH_SWR_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Attenuator between SWR switch and directional coupler</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.SWITCH_TONE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">SWITCH_TONE_ATTEN</tt><em class="property"> = 4</em><a class="headerlink" href="#eore.SWITCH_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Attenuator in path between SWR switch and pass-through to 6PST switch</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.TERMINATION">
+<tt class="descclassname">eore.</tt><tt class="descname">TERMINATION</tt><em class="property"> = 4</em><a class="headerlink" href="#eore.TERMINATION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - On-Board 50Ω Termination</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">TiggerAPI 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Connor Wolf.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eore &mdash; TiggerAPI 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="TiggerAPI 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">TiggerAPI 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for eore</h1><div class="highlight"><pre>
+<span class="c"># -*- encoding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">serial</span>
+
+
+<span class="n">HEADER</span>             <span class="o">=</span> <span class="s">&quot;</span><span class="se">\x5D</span><span class="s">&quot;</span>
+<span class="n">PACKET_HEADER</span>      <span class="o">=</span> <span class="s">&quot;</span><span class="se">\x5D</span><span class="s">&quot;</span>
+<span class="n">WRITE_ATTEN</span>        <span class="o">=</span> <span class="s">&quot;</span><span class="se">\xAA</span><span class="s">&quot;</span>
+<span class="n">WRITE_SWITCH</span>       <span class="o">=</span> <span class="s">&quot;</span><span class="se">\x0C</span><span class="s">&quot;</span>
+<span class="n">WRITE_FREQ</span>         <span class="o">=</span> <span class="s">&quot;</span><span class="se">\xC0</span><span class="s">&quot;</span>
+<span class="n">WRITE_MISC</span>         <span class="o">=</span> <span class="s">&quot;</span><span class="se">\xDD</span><span class="s">&quot;</span>
+
+
+<span class="c">#: Constant for the 6PST switch - Main input</span>
+<span class="n">MAIN_ANTENNA</span>        <span class="o">=</span> <span class="mh">0x00</span>
+<span class="c">#: Constant for the 6PST switch - SWR tone pass-through input</span>
+<span class="n">SWITCHED_TONE_INPUT</span> <span class="o">=</span> <span class="mh">0x01</span>
+<span class="c">#: Constant for the 6PST switch - Local EMI antenna input</span>
+<span class="n">EMI_ANTENNA</span>         <span class="o">=</span> <span class="mh">0x02</span>
+<span class="c">#: Constant for the 6PST switch - Auxiliary tone/pilot tone input</span>
+<span class="n">AUX_TONE_INPUT</span>      <span class="o">=</span> <span class="mh">0x03</span>
+<span class="c">#: Constant for the 6PST switch - On-Board 50Ω Termination</span>
+<span class="n">TERMINATION</span>         <span class="o">=</span> <span class="mh">0x04</span>
+<span class="c">#: Constant for the 6PST switch - Noise diode input</span>
+<span class="n">NOISE_SOURCE</span>        <span class="o">=</span> <span class="mh">0x05</span>
+
+<span class="c">#: Constant for the 6PST switch - Switch disabled (in reflective mode?)</span>
+<span class="n">SWITCH_SHUTDOWN</span>    <span class="o">=</span> <span class="mh">0x07</span>
+<span class="c"># 0x07 puts the switch in &quot;shutdown&quot; state. I /assume/ this means all</span>
+<span class="c"># the switches are open, but it&#39;s not definitively documented in the datasheet.</span>
+
+
+<span class="c">#: Variable attenuator selector constants - Main tone attenuator (on tigger board)</span>
+<span class="n">MAIN_TONE_ATTEN</span>       <span class="o">=</span> <span class="mh">0x00</span>
+
+<span class="c">#: Variable attenuator selector constants - Secondary tone attenuator (on EORE board)</span>
+<span class="n">AUX_TONE_ATTEN</span>        <span class="o">=</span> <span class="mh">0x01</span>   <span class="c">#</span>
+<span class="c">#: Variable attenuator selector constants - Noise diode output attenuator</span>
+<span class="n">NOISE_DIODE_ATTEN</span>     <span class="o">=</span> <span class="mh">0x02</span>   <span class="c">#</span>
+<span class="c">#: Variable attenuator selector constants - Attenuator between SWR switch and directional coupler</span>
+<span class="n">SWITCH_SWR_TONE_ATTEN</span> <span class="o">=</span> <span class="mh">0x03</span>   <span class="c">#</span>
+<span class="c">#: Variable attenuator selector constants - Attenuator in path between SWR switch and pass-through to 6PST switch</span>
+<span class="n">SWITCH_TONE_ATTEN</span>     <span class="o">=</span> <span class="mh">0x04</span>   <span class="c">#</span>
+<span class="c">#: Variable attenuator selector constants - Attenuator between the two onboard LNA</span>
+<span class="n">MID_AMP_ATTEN</span>         <span class="o">=</span> <span class="mh">0x05</span>   <span class="c">#</span>
+
+
+<span class="k">class</span> <span class="nc">EoreController</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="EoreController"><a class="viewcode-back" href="../index.html#eore.EoreController">[docs]</a>	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Base class for interfacing with the EORE Controller PCB (E.g. the &quot;tigger&quot; board)</span>
+
+
+<span class="sd">	&#39;&#39;&#39;</span>
+
+
+	<span class="n">_curFreq</span> <span class="o">=</span> <span class="mi">0</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">portName</span><span class="p">):</span>
+<div class="viewcode-block" id="EoreController.__init__"><a class="viewcode-back" href="../index.html#eore.EoreController.__init__">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Create instance of the ``EoreController`` class for the remote controller connected to ``portName``.</span>
+
+<span class="sd">		``portName`` is an ascii string containing the windows com-port name, e.g. ``COM4``, ``COM15``, etc...</span>
+
+<span class="sd">		If ``portName`` is not a valid port, a ``serial.serialutil.SerialException`` will be raised.</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">(</span><span class="n">portName</span><span class="p">,</span> <span class="mi">115200</span><span class="p">)</span>
+
+
+
+
+	<span class="c"># Calculate checksum for string {instr}</span>
+	<span class="c"># this is a very simple checksum, not a CRC or anything.</span>
+	<span class="c"># For the short packet sizes used here, it&#39;s sufficent.</span>
+	<span class="k">def</span> <span class="nf">__calculateChecksum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instr</span><span class="p">):</span></div>
+		<span class="n">cksum</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">instr</span><span class="p">:</span>
+			<span class="n">cksum</span> <span class="o">+=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">cksum</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span>
+
+
+	<span class="c"># def readSwitch(self):</span>
+	<span class="c"># 	pkt = &quot;%s%s\x00&quot; % (HEADER, READ_CMD)</span>
+	<span class="c"># 	pkt += self.calculateChecksum(pkt)</span>
+	<span class="c"># 	self.port.write(pkt)</span>
+	<span class="c"># 	rx = self._exhaust()</span>
+	<span class="c"># 	# print(&quot;RX Packet len&quot;, len(pkt), binascii.hexlify(pkt))</span>
+	<span class="c"># 	if rx:</span>
+	<span class="c"># 		# print(&quot;Received response!&quot;)</span>
+	<span class="c"># 		print(rx)</span>
+
+
+	<span class="k">def</span> <span class="nf">__sendCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+
+
+		<span class="n">pkt</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s%s%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">HEADER</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="nb">chr</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
+		<span class="k">for</span> <span class="n">dummy_x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+			<span class="n">pkt</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">value</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span>
+			<span class="n">value</span> <span class="o">&gt;&gt;=</span> <span class="mi">8</span>
+
+
+		<span class="n">pkt</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calculateChecksum</span><span class="p">(</span><span class="n">pkt</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pkt</span><span class="p">)</span>
+		<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+		<span class="n">rx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exhaust</span><span class="p">()</span>
+		<span class="k">if</span> <span class="n">rx</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span>
+
+	<span class="c"># Read all data in the rx buffer.</span>
+	<span class="k">def</span> <span class="nf">_exhaust</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">ret</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+		<span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">():</span>
+			<span class="n">ret</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+		<span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+
+
+	<span class="c"># switchChannel implicitly turns on the switch.</span>
+	<span class="k">def</span> <span class="nf">writeSwitch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">switchNo</span><span class="p">,</span> <span class="n">chan</span><span class="p">):</span>
+<div class="viewcode-block" id="EoreController.writeSwitch"><a class="viewcode-back" href="../index.html#eore.EoreController.writeSwitch">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Send command to set ``switchNo`` to ``chan``.</span>
+
+<span class="sd">		``chan`` and ``switchNo`` should be one of the constants defined in the ``eore`` module.</span>
+
+<span class="sd">		Raises ValueError if the switch number or channel is invalid.</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
+
+		<span class="k">if</span> <span class="n">chan</span> <span class="o">&gt;</span> <span class="mh">0x07</span> <span class="ow">or</span> <span class="n">chan</span> <span class="o">&lt;</span> <span class="mh">0x00</span> <span class="ow">or</span> <span class="n">chan</span> <span class="o">==</span> <span class="mh">0x06</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid switch channel &#39;</span><span class="si">%s</span><span class="s">&#39;!&quot;</span> <span class="o">%</span> <span class="n">chan</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="n">switchNo</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Only switch 0 is supported at this time.&quot;</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_SWITCH</span><span class="p">,</span> <span class="n">switchNo</span><span class="p">,</span> <span class="n">chan</span><span class="p">)</span>
+
+
+
+	<span class="k">def</span> <span class="nf">writeAtten</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atten</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.writeAtten"><a class="viewcode-back" href="../index.html#eore.EoreController.writeAtten">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Send command to set the attenuator ``atten`` to an attenuation level of ``value``.</span>
+
+<span class="sd">		``atten`` should be one of the constants defined in the ``eore`` module.</span>
+
+<span class="sd">		``value`` is the desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.</span>
+<span class="sd">		Specified values are rounded to the nearest 0.5 dB interval.</span>
+<span class="sd">		Values outside the 0-31.5 dB range will result in a ``ValueError``.</span>
+
+<span class="sd">		If the ``atten`` value is invalid, it will also raise a ``ValueError``</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mf">31.5</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mo">00</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Valid values 31.5 dB to 0 dB. Specified: &#39;</span><span class="si">%s</span><span class="s">&#39;!&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+
+		<span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c"># Round to nearest value</span>
+
+		<span class="k">if</span> <span class="n">atten</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_ATTEN</span><span class="p">,</span> <span class="n">atten</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Valid attenuators are 0-7&quot;</span><span class="p">)</span>
+
+
+	<span class="k">def</span> <span class="nf">noiseDiodePowerCtl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.noiseDiodePowerCtl"><a class="viewcode-back" href="../index.html#eore.EoreController.noiseDiodePowerCtl">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Send command to enable/disable the noise-diode power supply.</span>
+
+<span class="sd">		Tf ``on`` is ``True``, the noise diode will be enabled. If ``on`` is false, it will be turned off.</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="n">on</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_MISC</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_MISC</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+
+	<span class="c"># Set oscillator frequency</span>
+	<span class="k">def</span> <span class="nf">writeOscillator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">osc</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.writeOscillator"><a class="viewcode-back" href="../index.html#eore.EoreController.writeOscillator">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Set oscillator ``osc`` to output frequency ``freq``.</span>
+
+<span class="sd">		``freq`` must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator</span>
+<span class="sd">		off entirely.</span>
+
+<span class="sd">		Note that the ``disableOscillator`` call actually just calls this function, with the frequency hard-coded to ``0``.</span>
+
+<span class="sd">		Raises ``ValueError`` for frequencies outside the valid range, or invalid oscillator values.</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
+
+
+		<span class="k">if</span> <span class="n">osc</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Only oscillator number 0 is supported at this time.&quot;</span><span class="p">)</span>
+
+		<span class="k">print</span><span class="p">(</span><span class="s">&quot;Writing oscillator&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+		<span class="n">freq</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">freq</span> <span class="o">&lt;</span> <span class="mf">10e6</span> <span class="ow">or</span> <span class="n">freq</span> <span class="o">&gt;</span> <span class="mf">810e6</span><span class="p">)</span> <span class="ow">and</span> <span class="n">freq</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Frequency </span><span class="si">%s</span><span class="s"> is not valid. Valid available frequencies are 10 Mhz - 810 Mhz.&quot;</span> <span class="o">%</span> <span class="n">freq</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_FREQ</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+
+
+	<span class="c"># Convenience method</span>
+	<span class="k">def</span> <span class="nf">disableOscillator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">osc</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.disableOscillator"><a class="viewcode-back" href="../index.html#eore.EoreController.disableOscillator">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Convenience method. Turns off the oscillator ``osc``.</span>
+
+<span class="sd">		To re-enable the oscillator, you call ``writeOscillator`` with a non-zero frequency.</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">writeOscillator</span><span class="p">(</span><span class="n">osc</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">TiggerAPI 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Connor Wolf.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
