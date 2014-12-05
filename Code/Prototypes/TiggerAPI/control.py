@@ -1,37 +1,38 @@
 
 import time
-import serial
-
+import sys
 import eore
 
 def go():
 	print("Starting")
-	port = eore.EoreController("COM40")
+	port = eore.EoreController("COM2")
 	time.sleep(2)
 	port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
 
 	x = 0
-	port.writeAtten(0, 0)
-	port.writeAtten(1, 0)
-	port.writeAtten(2, 0)
-	port.writeAtten(3, 0)
-	port.writeAtten(4, 0)
-	port.writeAtten(5, 0)
-	port.writeAtten(eore.MID_AMP_ATTEN, 15)
-	port.writeAtten(eore.AUX_TONE_INPUT, 30)
+	port.writeAtten(eore.MAIN_TONE_ATTEN,       31.5)
+	port.writeAtten(eore.AUX_TONE_ATTEN,        31.5)
+	port.writeAtten(eore.NOISE_DIODE_ATTEN,     31.5)
+	port.writeAtten(eore.SWITCH_SWR_TONE_ATTEN, 31.5)
+	port.writeAtten(eore.SWITCH_TONE_ATTEN,     31.5)
+	port.writeAtten(eore.MID_AMP_ATTEN,         0)
 
-	vals = [0,1,2,3,4,5]
 
-	port.writeSwitch(0, 4)
+
+
 
 	# port.writeAtten(2, 31.5)
-	port.noiseDiodePowerCtl(1)
-	port.oscPowerCtl()
+	port.noiseDiodePowerCtl(0)
+	port.disableOscillator()
 
-	port.writeOscillator(0, 100e6)
+	port.writeOscillator(0, 0)
 	while 1:
 
+
+		port.writeSwitch(0, eore.TERMINATION)
+
+		sys.exit()
 
 		# try:
 		# 	atten = float(x)
