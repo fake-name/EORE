@@ -6,16 +6,22 @@
 Welcome to the EORE-Project / TiggerAPI documentation!
 =====================================
 
-Contents:
-
 .. toctree::
-   :maxdepth: 2
+   :glob:
+   :includehidden:
+   *
 
+Main Interface Class
+===============
 
 .. autoclass:: eore.EoreController
    :members:
    :undoc-members:
    :special-members: __init__
+
+
+Control Parameter Constants
+===============
 
 .. automodule:: eore
    :members:
