@@ -49,6 +49,28 @@
   <h1>Source code for eore</h1><div class="highlight"><pre>
 <span class="c"># -*- encoding: utf-8 -*-</span>
 
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">The EORE system RF control boards provide a single, unified API that allows</span>
+<span class="sd">configuring of all the hardware functionalities.</span>
+
+<span class="sd">Functionally, the entire interface is available through the single class</span>
+<span class="sd">``EoreController()``, which provides control methods for the various hardware</span>
+<span class="sd">sections.</span>
+
+<span class="sd">Fundamentally, the multiple, functionally disparate component types.</span>
+<span class="sd">Currently, it has variable attenuators, RF switches, RF Oscillators of several</span>
+<span class="sd">some varieties, and auxiliary systems (such as thermal stabilization).</span>
+
+
+<span class="sd">Mapping between switch-port/switch/attenuator/oscillator numbers and the</span>
+<span class="sd">actual hardware is provided by a set of constant variables defined in the</span>
+<span class="sd">``eore`` module.</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+
+
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">serial</span>
 
@@ -109,7 +131,8 @@
 <div class="viewcode-block" id="EoreController.__init__"><a class="viewcode-back" href="../index.html#eore.EoreController.__init__">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Create instance of the ``EoreController`` class for the remote controller connected to ``portName``.</span>
 
-<span class="sd">		``portName`` is an ascii string containing the windows com-port name, e.g. ``COM4``, ``COM15``, etc...</span>
+<span class="sd">		Args:</span>
+<span class="sd">			portName (string): An ascii string containing the windows com-port name, e.g. ``COM4``, ``COM15``, etc...</span>
 
 <span class="sd">		If ``portName`` is not a valid port, a ``serial.serialutil.SerialException`` will be raised.</span>
 
@@ -170,7 +193,11 @@
 <div class="viewcode-block" id="EoreController.writeSwitch"><a class="viewcode-back" href="../index.html#eore.EoreController.writeSwitch">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Send command to set ``switchNo`` to ``chan``.</span>
 
-<span class="sd">		``chan`` and ``switchNo`` should be one of the constants defined in the ``eore`` module.</span>
+<span class="sd">		Args:</span>
+<span class="sd">			switchNo (int): One of the switch constants defined in the ``eore`` module, for the switch to control.</span>
+<span class="sd">			chan (int): One of the channel constants defined in the ``eore`` module for the switch being controlled.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			No return value.</span>
 
 <span class="sd">		Raises ValueError if the switch number or channel is invalid.</span>
 
@@ -190,13 +217,18 @@
 <div class="viewcode-block" id="EoreController.writeAtten"><a class="viewcode-back" href="../index.html#eore.EoreController.writeAtten">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Send command to set the attenuator ``atten`` to an attenuation level of ``value``.</span>
 
-<span class="sd">		``atten`` should be one of the constants defined in the ``eore`` module.</span>
+<span class="sd">		Args:</span>
+<span class="sd">			atten (int): One of the constants defined in the ``eore`` module for selecting attenuators.</span>
+<span class="sd">			value (float): The desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			No return value.</span>
 
-<span class="sd">		``value`` is the desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.</span>
 <span class="sd">		Specified values are rounded to the nearest 0.5 dB interval.</span>
 <span class="sd">		Values outside the 0-31.5 dB range will result in a ``ValueError``.</span>
 
 <span class="sd">		If the ``atten`` value is invalid, it will also raise a ``ValueError``</span>
+
+
 
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mf">31.5</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mo">00</span><span class="p">:</span>
@@ -214,7 +246,10 @@
 <div class="viewcode-block" id="EoreController.noiseDiodePowerCtl"><a class="viewcode-back" href="../index.html#eore.EoreController.noiseDiodePowerCtl">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Send command to enable/disable the noise-diode power supply.</span>
 
-<span class="sd">		Tf ``on`` is ``True``, the noise diode will be enabled. If ``on`` is false, it will be turned off.</span>
+<span class="sd">		Args:</span>
+<span class="sd">			on (boolean): If ``on`` is ``True``, the noise diode will be enabled. If ``on`` is ``False``, it will be turned off.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			No return value.</span>
 
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">if</span> <span class="n">on</span><span class="p">:</span>
@@ -223,14 +258,15 @@
 			<span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_MISC</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
 
-
-	<span class="c"># Set oscillator frequency</span>
 	<span class="k">def</span> <span class="nf">writeOscillator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">osc</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span></div>
 <div class="viewcode-block" id="EoreController.writeOscillator"><a class="viewcode-back" href="../index.html#eore.EoreController.writeOscillator">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Set oscillator ``osc`` to output frequency ``freq``.</span>
 
-<span class="sd">		``freq`` must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator</span>
-<span class="sd">		off entirely.</span>
+<span class="sd">		Args:</span>
+<span class="sd">			osc (int): Oscillator to control. Should be one of the constants defined in the ``eore`` module.</span>
+<span class="sd">			freq (int): must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator off entirely.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			No return value.</span>
 
 <span class="sd">		Note that the ``disableOscillator`` call actually just calls this function, with the frequency hard-coded to ``0``.</span>
 
@@ -255,9 +291,55 @@
 <div class="viewcode-block" id="EoreController.disableOscillator"><a class="viewcode-back" href="../index.html#eore.EoreController.disableOscillator">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Convenience method. Turns off the oscillator ``osc``.</span>
 
+<span class="sd">		Args:</span>
+<span class="sd">			osc (int, default=0): Oscillator to turn off.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			No return value.</span>
+
 <span class="sd">		To re-enable the oscillator, you call ``writeOscillator`` with a non-zero frequency.</span>
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">writeOscillator</span><span class="p">(</span><span class="n">osc</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+
+	<span class="k">def</span> <span class="nf">setTemperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temp</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.setTemperature"><a class="viewcode-back" href="../index.html#eore.EoreController.setTemperature">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Set the thermal stabilization system to a target temperature of ``temp``.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			temp (float): Temperature at which to thermally stabilize the RF hardware.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			No return value.</span>
+
+<span class="sd">		Temp is a float, but the temperature sensor and internal calculations are</span>
+<span class="sd">		done with fixed-point math with a resolution of 0.0625°C, so adjustments</span>
+<span class="sd">		finer then this resolution will have no effect.</span>
+
+<span class="sd">		Valid temperature range is 0-80°C (though higher temps will work, they may</span>
+<span class="sd">		damage the hardware).</span>
+
+<span class="sd">		A set point of 0°C is a special-case value that will disable the heater output entirely.</span>
+
+<span class="sd">		Raises ``ValueError`` for temperatures outside the valid range.</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">pass</span>
+
+	<span class="k">def</span> <span class="nf">getTemperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.getTemperature"><a class="viewcode-back" href="../index.html#eore.EoreController.getTemperature">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Read the current temperature of the harware back from the device.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			None</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			(float): Current temperature</span>
+
+<span class="sd">		Returns the current hardware temperature, in degrees Celsius.</span>
+
+<span class="sd">		Raises ``ValueError`` if the hardware does not respond in a reasonable</span>
+<span class="sd">		time.</span>
+
+<span class="sd">		&#39;&#39;&#39;</span>
 </pre></div></div></div>
 
           </div>

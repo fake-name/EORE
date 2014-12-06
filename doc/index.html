@@ -46,11 +46,23 @@
             
   <div class="section" id="welcome-to-the-eore-project-tiggerapi-documentation">
 <h1>Welcome to the EORE-Project / TiggerAPI documentation!<a class="headerlink" href="#welcome-to-the-eore-project-tiggerapi-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
-<div class="toctree-wrapper compound">
-<ul class="simple">
-</ul>
 </div>
+<div class="section" id="module-eore">
+<span id="module-description"></span><h1>Module Description<a class="headerlink" href="#module-eore" title="Permalink to this headline">¶</a></h1>
+<p>The EORE system RF control boards provide a single, unified API that allows
+configuring of all the hardware functionalities.</p>
+<p>Functionally, the entire interface is available through the single class
+<tt class="docutils literal"><span class="pre">EoreController()</span></tt>, which provides control methods for the various hardware
+sections.</p>
+<p>Fundamentally, the multiple, functionally disparate component types.
+Currently, it has variable attenuators, RF switches, RF Oscillators of several
+some varieties, and auxiliary systems (such as thermal stabilization).</p>
+<p>Mapping between switch-port/switch/attenuator/oscillator numbers and the
+actual hardware is provided by a set of constant variables defined in the
+<tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
+</div>
+<div class="section" id="main-interface-class">
+<h1>Main Interface Class<a class="headerlink" href="#main-interface-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="eore.EoreController">
 <em class="property">class </em><tt class="descclassname">eore.</tt><tt class="descname">EoreController</tt><big>(</big><em>portName</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController" title="Permalink to this definition">¶</a></dt>
@@ -59,101 +71,179 @@
 <dt id="eore.EoreController.__init__">
 <tt class="descname">__init__</tt><big>(</big><em>portName</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create instance of the <tt class="docutils literal"><span class="pre">EoreController</span></tt> class for the remote controller connected to <tt class="docutils literal"><span class="pre">portName</span></tt>.</p>
-<p><tt class="docutils literal"><span class="pre">portName</span></tt> is an ascii string containing the windows com-port name, e.g. <tt class="docutils literal"><span class="pre">COM4</span></tt>, <tt class="docutils literal"><span class="pre">COM15</span></tt>, etc...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>portName</strong> (<em>string</em>) &#8211; An ascii string containing the windows com-port name, e.g. <tt class="docutils literal"><span class="pre">COM4</span></tt>, <tt class="docutils literal"><span class="pre">COM15</span></tt>, etc...</td>
+</tr>
+</tbody>
+</table>
 <p>If <tt class="docutils literal"><span class="pre">portName</span></tt> is not a valid port, a <tt class="docutils literal"><span class="pre">serial.serialutil.SerialException</span></tt> will be raised.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="eore.EoreController.disableOscillator">
-<tt class="descname">disableOscillator</tt><big>(</big><em>osc=0</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.disableOscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.disableOscillator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience method. Turns off the oscillator <tt class="docutils literal"><span class="pre">osc</span></tt>.</p>
-<p>To re-enable the oscillator, you call <tt class="docutils literal"><span class="pre">writeOscillator</span></tt> with a non-zero frequency.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="eore.EoreController.noiseDiodePowerCtl">
-<tt class="descname">noiseDiodePowerCtl</tt><big>(</big><em>on=False</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.noiseDiodePowerCtl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.noiseDiodePowerCtl" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send command to enable/disable the noise-diode power supply.</p>
-<p>Tf <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>, the noise diode will be enabled. If <tt class="docutils literal"><span class="pre">on</span></tt> is false, it will be turned off.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="eore.EoreController.writeAtten">
-<tt class="descname">writeAtten</tt><big>(</big><em>atten</em>, <em>value</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeAtten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeAtten" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send command to set the attenuator <tt class="docutils literal"><span class="pre">atten</span></tt> to an attenuation level of <tt class="docutils literal"><span class="pre">value</span></tt>.</p>
-<p><tt class="docutils literal"><span class="pre">atten</span></tt> should be one of the constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
-<p><tt class="docutils literal"><span class="pre">value</span></tt> is the desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.
-Specified values are rounded to the nearest 0.5 dB interval.
-Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"><span class="pre">ValueError</span></tt>.</p>
-<p>If the <tt class="docutils literal"><span class="pre">atten</span></tt> value is invalid, it will also raise a <tt class="docutils literal"><span class="pre">ValueError</span></tt></p>
-</dd></dl>
-
-<dl class="method">
-<dt id="eore.EoreController.writeOscillator">
-<tt class="descname">writeOscillator</tt><big>(</big><em>osc</em>, <em>freq</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeOscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeOscillator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set oscillator <tt class="docutils literal"><span class="pre">osc</span></tt> to output frequency <tt class="docutils literal"><span class="pre">freq</span></tt>.</p>
-<p><tt class="docutils literal"><span class="pre">freq</span></tt> must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator
-off entirely.</p>
-<p>Note that the <tt class="docutils literal"><span class="pre">disableOscillator</span></tt> call actually just calls this function, with the frequency hard-coded to <tt class="docutils literal"><span class="pre">0</span></tt>.</p>
-<p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> for frequencies outside the valid range, or invalid oscillator values.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="eore.EoreController.writeSwitch">
 <tt class="descname">writeSwitch</tt><big>(</big><em>switchNo</em>, <em>chan</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeSwitch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeSwitch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send command to set <tt class="docutils literal"><span class="pre">switchNo</span></tt> to <tt class="docutils literal"><span class="pre">chan</span></tt>.</p>
-<p><tt class="docutils literal"><span class="pre">chan</span></tt> and <tt class="docutils literal"><span class="pre">switchNo</span></tt> should be one of the constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>switchNo</strong> (<em>int</em>) &#8211; One of the switch constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module, for the switch to control.</li>
+<li><strong>chan</strong> (<em>int</em>) &#8211; One of the channel constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module for the switch being controlled.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">No return value.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <p>Raises ValueError if the switch number or channel is invalid.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="eore.EoreController.writeAtten">
+<tt class="descname">writeAtten</tt><big>(</big><em>atten</em>, <em>value</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeAtten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeAtten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send command to set the attenuator <tt class="docutils literal"><span class="pre">atten</span></tt> to an attenuation level of <tt class="docutils literal"><span class="pre">value</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>atten</strong> (<em>int</em>) &#8211; One of the constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module for selecting attenuators.</li>
+<li><strong>value</strong> (<em>float</em>) &#8211; The desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">No return value.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Specified values are rounded to the nearest 0.5 dB interval.
+Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"><span class="pre">ValueError</span></tt>.</p>
+<p>If the <tt class="docutils literal"><span class="pre">atten</span></tt> value is invalid, it will also raise a <tt class="docutils literal"><span class="pre">ValueError</span></tt></p>
 </dd></dl>
 
-<span class="target" id="module-eore"></span><dl class="data">
-<dt id="eore.AUX_TONE_ATTEN">
-<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_ATTEN</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.AUX_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Variable attenuator selector constants - Secondary tone attenuator (on EORE board)</p>
+<dl class="method">
+<dt id="eore.EoreController.noiseDiodePowerCtl">
+<tt class="descname">noiseDiodePowerCtl</tt><big>(</big><em>on=False</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.noiseDiodePowerCtl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.noiseDiodePowerCtl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send command to enable/disable the noise-diode power supply.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>on</strong> (<em>boolean</em>) &#8211; If <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>, the noise diode will be enabled. If <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">False</span></tt>, it will be turned off.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">No return value.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="data">
-<dt id="eore.AUX_TONE_INPUT">
-<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_INPUT</tt><em class="property"> = 3</em><a class="headerlink" href="#eore.AUX_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constant for the 6PST switch - Auxiliary tone/pilot tone input</p>
+<dl class="method">
+<dt id="eore.EoreController.writeOscillator">
+<tt class="descname">writeOscillator</tt><big>(</big><em>osc</em>, <em>freq</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.writeOscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.writeOscillator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set oscillator <tt class="docutils literal"><span class="pre">osc</span></tt> to output frequency <tt class="docutils literal"><span class="pre">freq</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>osc</strong> (<em>int</em>) &#8211; Oscillator to control. Should be one of the constants defined in the <tt class="docutils literal"><span class="pre">eore</span></tt> module.</li>
+<li><strong>freq</strong> (<em>int</em>) &#8211; must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator off entirely.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">No return value.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the <tt class="docutils literal"><span class="pre">disableOscillator</span></tt> call actually just calls this function, with the frequency hard-coded to <tt class="docutils literal"><span class="pre">0</span></tt>.</p>
+<p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> for frequencies outside the valid range, or invalid oscillator values.</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="eore.EMI_ANTENNA">
-<tt class="descclassname">eore.</tt><tt class="descname">EMI_ANTENNA</tt><em class="property"> = 2</em><a class="headerlink" href="#eore.EMI_ANTENNA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constant for the 6PST switch - Local EMI antenna input</p>
+<dl class="method">
+<dt id="eore.EoreController.disableOscillator">
+<tt class="descname">disableOscillator</tt><big>(</big><em>osc=0</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.disableOscillator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.disableOscillator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method. Turns off the oscillator <tt class="docutils literal"><span class="pre">osc</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>osc</strong> (<em>int, default=0</em>) &#8211; Oscillator to turn off.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">No return value.</td>
+</tr>
+</tbody>
+</table>
+<p>To re-enable the oscillator, you call <tt class="docutils literal"><span class="pre">writeOscillator</span></tt> with a non-zero frequency.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="eore.EoreController.setTemperature">
+<tt class="descname">setTemperature</tt><big>(</big><em>temp</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.setTemperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.setTemperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the thermal stabilization system to a target temperature of <tt class="docutils literal"><span class="pre">temp</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> (<em>float</em>) &#8211; Temperature at which to thermally stabilize the RF hardware.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">No return value.</td>
+</tr>
+</tbody>
+</table>
+<p>Temp is a float, but the temperature sensor and internal calculations are
+done with fixed-point math with a resolution of 0.0625°C, so adjustments
+finer then this resolution will have no effect.</p>
+<p>Valid temperature range is 0-80°C (though higher temps will work, they may
+damage the hardware).</p>
+<p>A set point of 0°C is a special-case value that will disable the heater output entirely.</p>
+<p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> for temperatures outside the valid range.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.getTemperature">
+<tt class="descname">getTemperature</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.getTemperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.getTemperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the current temperature of the harware back from the device.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(float): Current temperature</td>
+</tr>
+</tbody>
+</table>
+<p>Returns the current hardware temperature, in degrees Celsius.</p>
+<p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> if the hardware does not respond in a reasonable
+time.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-eore">
+<span id="control-parameter-constants"></span><h1>Control Parameter Constants<a class="headerlink" href="#module-eore" title="Permalink to this headline">¶</a></h1>
+<p>The EORE system RF control boards provide a single, unified API that allows
+configuring of all the hardware functionalities.</p>
+<p>Functionally, the entire interface is available through the single class
+<tt class="docutils literal"><span class="pre">EoreController()</span></tt>, which provides control methods for the various hardware
+sections.</p>
+<p>Fundamentally, the multiple, functionally disparate component types.
+Currently, it has variable attenuators, RF switches, RF Oscillators of several
+some varieties, and auxiliary systems (such as thermal stabilization).</p>
+<p>Mapping between switch-port/switch/attenuator/oscillator numbers and the
+actual hardware is provided by a set of constant variables defined in the
+<tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
 <dl class="data">
 <dt id="eore.MAIN_ANTENNA">
 <tt class="descclassname">eore.</tt><tt class="descname">MAIN_ANTENNA</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_ANTENNA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for the 6PST switch - Main input</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="eore.MAIN_TONE_ATTEN">
-<tt class="descclassname">eore.</tt><tt class="descname">MAIN_TONE_ATTEN</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Variable attenuator selector constants - Main tone attenuator (on tigger board)</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="eore.MID_AMP_ATTEN">
-<tt class="descclassname">eore.</tt><tt class="descname">MID_AMP_ATTEN</tt><em class="property"> = 5</em><a class="headerlink" href="#eore.MID_AMP_ATTEN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Variable attenuator selector constants - Attenuator between the two onboard LNA</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="eore.NOISE_DIODE_ATTEN">
-<tt class="descclassname">eore.</tt><tt class="descname">NOISE_DIODE_ATTEN</tt><em class="property"> = 2</em><a class="headerlink" href="#eore.NOISE_DIODE_ATTEN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Variable attenuator selector constants - Noise diode output attenuator</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="eore.NOISE_SOURCE">
-<tt class="descclassname">eore.</tt><tt class="descname">NOISE_SOURCE</tt><em class="property"> = 5</em><a class="headerlink" href="#eore.NOISE_SOURCE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constant for the 6PST switch - Noise diode input</p>
 </dd></dl>
 
 <dl class="data">
@@ -163,9 +253,51 @@ off entirely.</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="eore.EMI_ANTENNA">
+<tt class="descclassname">eore.</tt><tt class="descname">EMI_ANTENNA</tt><em class="property"> = 2</em><a class="headerlink" href="#eore.EMI_ANTENNA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Local EMI antenna input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.AUX_TONE_INPUT">
+<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_INPUT</tt><em class="property"> = 3</em><a class="headerlink" href="#eore.AUX_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Auxiliary tone/pilot tone input</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.TERMINATION">
+<tt class="descclassname">eore.</tt><tt class="descname">TERMINATION</tt><em class="property"> = 4</em><a class="headerlink" href="#eore.TERMINATION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - On-Board 50Ω Termination</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.NOISE_SOURCE">
+<tt class="descclassname">eore.</tt><tt class="descname">NOISE_SOURCE</tt><em class="property"> = 5</em><a class="headerlink" href="#eore.NOISE_SOURCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant for the 6PST switch - Noise diode input</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="eore.SWITCH_SHUTDOWN">
 <tt class="descclassname">eore.</tt><tt class="descname">SWITCH_SHUTDOWN</tt><em class="property"> = 7</em><a class="headerlink" href="#eore.SWITCH_SHUTDOWN" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for the 6PST switch - Switch disabled (in reflective mode?)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.MAIN_TONE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">MAIN_TONE_ATTEN</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Main tone attenuator (on tigger board)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.AUX_TONE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_ATTEN</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.AUX_TONE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Secondary tone attenuator (on EORE board)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.NOISE_DIODE_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">NOISE_DIODE_ATTEN</tt><em class="property"> = 2</em><a class="headerlink" href="#eore.NOISE_DIODE_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Noise diode output attenuator</p>
 </dd></dl>
 
 <dl class="data">
@@ -181,9 +313,9 @@ off entirely.</p>
 </dd></dl>
 
 <dl class="data">
-<dt id="eore.TERMINATION">
-<tt class="descclassname">eore.</tt><tt class="descname">TERMINATION</tt><em class="property"> = 4</em><a class="headerlink" href="#eore.TERMINATION" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constant for the 6PST switch - On-Board 50Ω Termination</p>
+<dt id="eore.MID_AMP_ATTEN">
+<tt class="descclassname">eore.</tt><tt class="descname">MID_AMP_ATTEN</tt><em class="property"> = 5</em><a class="headerlink" href="#eore.MID_AMP_ATTEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variable attenuator selector constants - Attenuator between the two onboard LNA</p>
 </dd></dl>
 
 </div>
@@ -194,6 +326,14 @@ off entirely.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to the EORE-Project / TiggerAPI documentation!</a></li>
+<li><a class="reference internal" href="#module-eore">Module Description</a></li>
+<li><a class="reference internal" href="#main-interface-class">Main Interface Class</a></li>
+<li><a class="reference internal" href="#module-eore">Control Parameter Constants</a></li>
+</ul>
+
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
