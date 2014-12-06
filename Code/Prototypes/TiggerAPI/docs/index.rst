@@ -4,15 +4,17 @@
    contain the root `toctree` directive.
 
 Welcome to the EORE-Project / TiggerAPI documentation!
-=====================================
+=========================================================
 
-.. toctree::
-   :glob:
-   :includehidden:
-   *
+
+Module Description
+============================
+
+.. automodule:: eore
+   :synopsis:
 
 Main Interface Class
-===============
+============================
 
 .. autoclass:: eore.EoreController
    :members:
@@ -21,11 +23,13 @@ Main Interface Class
 
 
 Control Parameter Constants
-===============
+============================
 
 .. automodule:: eore
    :members:
-   :undoc-members:
    :exclude-members: eore.EoreController, EoreController
+
+
+
 
 

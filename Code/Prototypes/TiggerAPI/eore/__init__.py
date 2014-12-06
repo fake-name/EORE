@@ -1,19 +1,31 @@
 
 # -*- encoding: utf-8 -*-
 
+'''
+
+The EORE system RF control boards provide a single, unified API that allows
+configuring of all the hardware functionalities.
+
+Functionally, the entire interface is available through the single class
+``EoreController()``, which provides control methods for the various hardware
+sections.
+
+Fundamentally, the multiple, functionally disparate component types.
+Currently, it has variable attenuators, RF switches, RF Oscillators of several
+some varieties, and auxiliary systems (such as thermal stabilization).
+
+
+Mapping between switch-port/switch/attenuator/oscillator numbers and the
+actual hardware is provided by a set of constant variables defined in the
+``eore`` module.
+
+'''
+
+
+
 import time
 import serial
 
-
-
-'''
-Test?
-
-'''
-
-
-#
-#
 
 HEADER             = "\x5D"
 PACKET_HEADER      = "\x5D"
@@ -71,7 +83,8 @@ class EoreController(object):
 		'''
 		Create instance of the ``EoreController`` class for the remote controller connected to ``portName``.
 
-		``portName`` is an ascii string containing the windows com-port name, e.g. ``COM4``, ``COM15``, etc...
+		Args:
+			portName (string): An ascii string containing the windows com-port name, e.g. ``COM4``, ``COM15``, etc...
 
 		If ``portName`` is not a valid port, a ``serial.serialutil.SerialException`` will be raised.
 
@@ -135,6 +148,8 @@ class EoreController(object):
 		Args:
 			switchNo (int): One of the switch constants defined in the ``eore`` module, for the switch to control.
 			chan (int): One of the channel constants defined in the ``eore`` module for the switch being controlled.
+		Returns:
+			No return value.
 
 		Raises ValueError if the switch number or channel is invalid.
 
@@ -157,10 +172,15 @@ class EoreController(object):
 		Args:
 			atten (int): One of the constants defined in the ``eore`` module for selecting attenuators.
 			value (float): The desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.
+		Returns:
+			No return value.
+
 		Specified values are rounded to the nearest 0.5 dB interval.
 		Values outside the 0-31.5 dB range will result in a ``ValueError``.
 
 		If the ``atten`` value is invalid, it will also raise a ``ValueError``
+
+
 
 		'''
 		if value > 31.5 or value < 00:
@@ -178,7 +198,10 @@ class EoreController(object):
 		'''
 		Send command to enable/disable the noise-diode power supply.
 
-		Tf ``on`` is ``True``, the noise diode will be enabled. If ``on`` is false, it will be turned off.
+		Args:
+			on (boolean): If ``on`` is ``True``, the noise diode will be enabled. If ``on`` is ``False``, it will be turned off.
+		Returns:
+			No return value.
 
 		'''
 		if on:
@@ -187,14 +210,15 @@ class EoreController(object):
 			self.__sendCommand(WRITE_MISC, 0, 0)
 
 
-
-	# Set oscillator frequency
 	def writeOscillator(self, osc, freq):
 		'''
 		Set oscillator ``osc`` to output frequency ``freq``.
 
-		``freq`` must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator
-		off entirely.
+		Args:
+			osc (int): Oscillator to control. Should be one of the constants defined in the ``eore`` module.
+			freq (int): must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator off entirely.
+		Returns:
+			No return value.
 
 		Note that the ``disableOscillator`` call actually just calls this function, with the frequency hard-coded to ``0``.
 
@@ -219,6 +243,54 @@ class EoreController(object):
 		'''
 		Convenience method. Turns off the oscillator ``osc``.
 
+		Args:
+			osc (int, default=0): Oscillator to turn off.
+		Returns:
+			No return value.
+
 		To re-enable the oscillator, you call ``writeOscillator`` with a non-zero frequency.
 		'''
 		self.writeOscillator(osc, 0)
+
+
+
+	def setTemperature(self, temp):
+		'''
+		Set the thermal stabilization system to a target temperature of ``temp``.
+
+		Args:
+			temp (float): Temperature at which to thermally stabilize the RF hardware.
+		Returns:
+			No return value.
+
+		Temp is a float, but the temperature sensor and internal calculations are
+		done with fixed-point math with a resolution of 0.0625°C, so adjustments
+		finer then this resolution will have no effect.
+
+		Valid temperature range is 0-80°C (though higher temps will work, they may
+		damage the hardware).
+
+		A set point of 0°C is a special-case value that will disable the heater output entirely.
+
+		Raises ``ValueError`` for temperatures outside the valid range.
+
+		'''
+		pass
+
+	def getTemperature(self):
+		'''
+		Read the current temperature of the harware back from the device.
+
+		Args:
+			None
+		Returns:
+			(float): Current temperature
+
+		Returns the current hardware temperature, in degrees Celsius.
+
+		Raises ``ValueError`` if the hardware does not respond in a reasonable
+		time.
+
+		'''
+
+
