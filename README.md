@@ -9,4 +9,6 @@ While the normal 21 cm line is ~1420 MHz, this experiment is targeting the 50-25
 
 Current topology is to use a SignalHound [BB60C](https://www.signalhound.com/products/bb60c/) spectrum analyser for the backend receiver (though my [API wrapper](https://github.com/fake-name/pySignalHound)), while the boards in this repository are front-end amplifiers and various components for tracking local oscillator drift, antenna characterization and so forth.
 
+RF System hardware API documentation is [here](http://fake-name.github.io/EORE/doc/)
+
 The eventual system will involve a great many separate nodes spread around the globe, all acting as a large-scale array.
