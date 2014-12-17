@@ -5,38 +5,52 @@
 # pylint: disable=E1101
 
 import multiprocessing as mp
-import logSetup
-import logging
+import common.logSetup
+import common.printThread
 
-import time
-import CooperativeTask
+import common.CooperativeTask
 import signal
 import sys
+
+import jobs
 
 
 def go():
 
 
-
-
 	signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 	printQueue = mp.Queue()
-	# logSetup.initLogging(printQ = printQueue)
+	common.logSetup.initLogging(printQ = printQueue)
 	# log = logging.getLogger("Main.Main")
 
 	ctrlManager = mp.Manager()
 	ctrlNs = ctrlManager.Namespace()
-	ctrlNs.alive = True
+
+	alive = mp.Value('i')
+	alive.value = 1
+
+	printAlive = mp.Value('i')
+	printAlive.value = 1
+
+	# A separate process for printing, which allows nice easy non-blocking printing.
+	printProc = mp.Process(target=common.printThread.printer, name="PrintArbiter", args=(printQueue, printAlive))
+
+	printProc.start()
 
 
 	def signal_handler(dummy_signal, dummy_frame):
-		print("Halting")
-		ctrlNs.alive = False
+		printQueue.put("Halting")
+		alive.value = 0
 
 	signal.signal(signal.SIGINT, signal_handler)
 
-	CooperativeTask.runScheduler(printQueue, ctrlNs)
+
+	sched = jobs.AcquisitionScheduler(printQueue, alive)
+	sched.go()
+
+	printAlive.value = 0
+	printProc.join()
 
 	print("Halting manager")
 	ctrlManager.shutdown()

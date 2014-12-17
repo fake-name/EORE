@@ -16,10 +16,6 @@
 #
 
 # Drag in path to the library (MESSY)
-import os, sys
-lib_path = os.path.abspath('../')
-print "Lib Path = ", lib_path
-sys.path.append(lib_path)
 
 
 import logSetup
@@ -33,10 +29,15 @@ import os
 import os.path
 import cPickle
 
-from settings import NUM_AVERAGE, FILE_ROTATION_INTERVAL
+from SpectraLogger.settings import NUM_AVERAGE, FILE_ROTATION_INTERVAL
 
 
 def logSweeps(dataQueue, ctrlNs, printQueue, test=False):
+
+	import signal
+	signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
 	log = logging.getLogger("Main.LogProcess")
 	logSetup.initLogging(printQ = printQueue)
 

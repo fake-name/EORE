@@ -1,17 +1,13 @@
 # -*- coding: UTF-8 -*-
 
 
-# pylint: disable=R0913, R0912, W0603
+##  pylint: // disable=R0913, R0912, W0603
 
-import logSetup
-import logging
 import errno
-
 import multiprocessing as mp
 import threading
 import abc
 import time
-import signal
 
 def interruptable(arg_func):
 	'''
@@ -64,20 +60,33 @@ class TimedJob(object):
 	# Should this job halt as soon as convenient.
 	shouldRun = True
 
-	def __init__(self, printQ, ctrlNs):
+	def __init__(self, printQ, shouldRun):
 
 		# We're multi-processing. Catch and ignore signals.
 		# signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 		self.printQ = printQ
-		self.ctrlNs = ctrlNs
+		self.running = shouldRun
 
+		# Multiprocessing shared value to trigger a graceful halt
+		self.plzhalt = mp.Value('i')
+		self.plzhalt.value = 1
 
+	def log(self, *args, **kwargs):
+		self.printQ.put(*args, **kwargs)
 
 	def continueRunning(self):
-		if not self.shouldRun:
+		try:
+			if self.plzhalt.value == 0:
+				return False
+		except Exception:
+			self.log("Shouldrun flag manager killed?")
 			return False
-		if not self.ctrlNs.alive:
+		try:
+			if not self.running.value:
+				return False
+		except Exception:
+			self.log("Control Namespace killed?")
 			return False
 		return True
 
@@ -90,7 +99,9 @@ class TimedJob(object):
 		has passed, or a shutdown signal (Ctrl-C) has been received.
 		'''
 
-		self.shouldRun = True
+
+		self.plzhalt.value = 1
+
 		self.thread = threading.Thread(target=self._go_thread)
 
 		self.thread.start()
@@ -103,10 +114,10 @@ class TimedJob(object):
 		# To some extent, this renders the requirement for the ctrlNs.alive variable, since
 		# the job will short-circuit to self.shouldRun = False on ctrl+c, but I'm not
 		# completely confident that will be reliable with more threads and/or multiprocessing.
-		self.shouldRun = False
+		self.plzhalt.value = 0
 		for dummy_x in xrange(self.haltTimeout):
 			interruptableJoin(self.thread, 1)
-			print("Joining", dummy_x)
+			self.log("Joining", dummy_x)
 			if not self.thread.isAlive():
 				return
 
@@ -118,8 +129,8 @@ class TimedJob(object):
 		Internal wrapper around `go()` that does some thread-local cleanup
 		'''
 		self.go()
-		print("Halting background processes")
-		self.printQ.close()
+		# self.log("Halting background processes")
+		# self.printQ.close()
 
 
 
@@ -131,15 +142,57 @@ class TimedJob(object):
 		pass
 
 	@classmethod
-	def run(cls, printQ, ctrlNs):
+	def run(cls, printQ, runState):
 		'''
 		ClassMethod callable that instantiates a scheduler, and calls
 		go on it.
 		'''
-		instance = cls(printQ, ctrlNs)
+		instance = cls(printQ, runState)
 		instance._go()
 		return True
 
+
+class BaseScheduler(object):
+	# This is an abstract class
+	__metaclass__ = abc.ABCMeta
+
+	def __init__(self, printQueue, runState):
+		self.printQueue = printQueue
+		self.runState   = runState
+
+
+	#: Number of seconds this job wants to run for.
+	@abc.abstractmethod
+	def getNextJob(self):
+		pass
+
+	def go(self):
+
+		try:
+			for job in self.getNextJob():
+				job.run(self.printQueue, self.runState)
+
+				try:
+					if not self.runState.value:
+						print("Exiting due to runstate = ", self.runState.value)
+						break
+				except IOError:
+					print("Manager killed?")
+					break
+				print("Runstate = ", self.runState.value)
+
+
+		except Exception:
+			print("Error")
+			import traceback
+			traceback.print_exc()
+
+
+########################################################
+#
+# Testing:
+#
+########################################################
 
 class PrintOh(TimedJob):
 
@@ -148,7 +201,7 @@ class PrintOh(TimedJob):
 
 	def go(self):
 		while self.continueRunning():
-			print('Oh')
+			self.log('Oh')
 			interruptibleSleep(1)
 
 
@@ -159,32 +212,21 @@ class PrintHai(TimedJob):
 
 	def go(self):
 		while self.continueRunning():
-			print('Hai')
+			self.log('Hai')
 			interruptibleSleep(1)
 
 
-jobs = [PrintOh, PrintHai]
+class TestScheduler(BaseScheduler):
 
-def runScheduler(printQueue, ctrlNs):
+	jobs = [PrintOh, PrintHai]
+	jobIndex = 0
 
-	x = 0
-	try:
+	def getNextJob(self):
 		while 1:
-			x = x % len(jobs)
-			jobs[x].run(printQueue, ctrlNs)
+			yield self.jobs[self.jobIndex]
+			self.jobIndex += 1
+			self.jobIndex = self.jobIndex % len(self.jobs)
 
-			x += 1
-			try:
-				if not ctrlNs.alive:
-					break
-			except IOError:
-				print("Manager killed?")
-				break
-
-
-
-	except Exception:
-		print("Error")
-		import traceback
-		traceback.print_exc()
-
+def runScheduler(printQueue, runState):
+	sched = TestScheduler(printQueue, runState)
+	sched.go()

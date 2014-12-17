@@ -17,7 +17,7 @@
 IF_WIDTH = 27e6
 
 
-import logSetup
+import common.logSetup as logSetup
 import logging
 import time
 import traceback
@@ -30,6 +30,10 @@ from settings import ACQ_SWEEP_TIME_SECONDS, ACQ_WINDOW_TYPE, ACQ_UNITS, ACQ_TYP
 from settings import NUM_AVERAGE
 
 def sweepSource(dataQueues, ctrlNs, printQueue):
+
+	import signal
+	signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 	acqRunner = InternalSweepAcqThread(printQueue)
 	acqRunner.sweepSource(dataQueues, ctrlNs)
 

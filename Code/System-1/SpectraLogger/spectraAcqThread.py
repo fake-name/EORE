@@ -15,7 +15,7 @@
 #
 
 
-import logSetup
+import common.logSetup as logSetup
 import logging
 import time
 import traceback
@@ -23,10 +23,10 @@ import traceback
 import numpy as np
 
 # Pull in the settings crap
-from settings import ACQ_FREQ, ACQ_SPAN, ACQ_REF_LEVEL_DB, ACQ_ATTENUATION_DB, ACQ_GAIN_SETTING, ACQ_RBW, ACQ_VBW
-from settings import ACQ_SWEEP_TIME_SECONDS, ACQ_WINDOW_TYPE, ACQ_UNITS, ACQ_TYPE, ACQ_MODE, ACQ_Y_SCALE, PRINT_LOOP_CNT, CAL_CHK_LOOP_CNT
+from SpectraLogger.settings import ACQ_FREQ, ACQ_SPAN, ACQ_REF_LEVEL_DB, ACQ_ATTENUATION_DB, ACQ_GAIN_SETTING, ACQ_RBW, ACQ_VBW
+from SpectraLogger.settings import ACQ_SWEEP_TIME_SECONDS, ACQ_WINDOW_TYPE, ACQ_UNITS, ACQ_TYPE, ACQ_MODE, ACQ_Y_SCALE, PRINT_LOOP_CNT, CAL_CHK_LOOP_CNT
 
-from settings import NUM_AVERAGE
+from SpectraLogger.settings import NUM_AVERAGE
 
 def startAcquisition(sh, dataQueue, plotQueue):
 
@@ -49,6 +49,10 @@ def startAcquisition(sh, dataQueue, plotQueue):
 		plotQueue.put({"settings" : sh.getCurrentAcquisitionSettings()})
 
 def sweepSource(dataQueues, ctrlNs, printQueue):
+
+
+	import signal
+	signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 	dataQueue, plotQueue = dataQueues
 

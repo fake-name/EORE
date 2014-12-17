@@ -23,7 +23,6 @@ import logSetup
 import numpy as np
 import traceback
 import cPickle
-import settings
 
 
 HOST = ''                 # Symbolic name meaning all available interfaces
@@ -34,6 +33,9 @@ CONN_TIMEOUT = 0.01
 
 def startApiServer(dataQueue, ctrlNs, printQueue):
 
+
+	import signal
+	signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 	log = logging.getLogger("Main.PlotApiProcess")
 	logSetup.initLogging(printQ = printQueue)

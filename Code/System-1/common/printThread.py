@@ -16,19 +16,21 @@
 #
 
 
-import logSetup
-import logging
-import time
+from common.CooperativeTask import interruptibleSleep
 
+import logging
+import signal
 
 
 NUM_AVERAGE = 1
 
-def printer(printQueue, ctrlNs):
+def printer(printQueue, mpAlive):
 
+
+	# We're multi-processing. Catch and ignore signals.
+	signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 	log = logging.getLogger("Main.Printer")
-	logSetup.initLogging()
 
 	while 1:
 		if not printQueue.empty():
@@ -36,13 +38,16 @@ def printer(printQueue, ctrlNs):
 
 
 
-
-
-		if ctrlNs.acqRunning == False and ctrlNs.apiRunning == False:
+		alive = False
+		try:
+			alive = mpAlive.value
+		except Exception:
+			pass
+		if alive == False:
 			print("Stopping Printing-thread!")
 			break
 
-		time.sleep(0.001)
+		interruptibleSleep(0.001)
 
 
 	print("Print-thread exiting!")
