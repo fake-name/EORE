@@ -71,8 +71,8 @@ def go():
 		print("Main")
 
 	proc.join()
-	th.join()
 
+	ctrlManager.shutdown()
 
 
 

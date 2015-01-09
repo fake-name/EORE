@@ -27,3 +27,5 @@ Debug
 stino.settings
 /Code/Prototypes/TiggerAPI/docs/_build/
 
+/Code/System-1/logs
+/Code/Data/2014/12/16/*.h5
