@@ -9,11 +9,8 @@
  */
 
 #include <inttypes.h>
-
-// #include "A1Main.h"
 #include "si570/Si570.hpp"
 #include "print/print.hpp"
-// #include "debug.h"
 
 #include <asf.h>
 

@@ -15,6 +15,7 @@
 #include "spi/spi.hpp"
 #include "pwm/pwm.hpp"
 #include "parse.hpp"
+#include "dac/dac.h"
 
 
 
@@ -176,6 +177,8 @@ void setup(void)
 	setupPwm();
 
 	setup_vfo();
+	
+	enableDac();
 
 	// Finally, turn on the interrupts.
 	cpu_irq_enable();

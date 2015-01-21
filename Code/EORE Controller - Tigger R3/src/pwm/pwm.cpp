@@ -126,7 +126,7 @@ void PWM_Handler(void)
 	uint16_t tempval;
 
 	tempval = 0;
-	read_temp(1, &tempval);
+	// read_temp(1, &tempval);
 
 
 	double calc = ((int16_t) tempval) >> 4;

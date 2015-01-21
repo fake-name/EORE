@@ -30,6 +30,7 @@
 #include "tmp/tmp100.hpp"
 #include "spi/spi.hpp"
 #include "pwm/pwm.hpp"
+#include "dac/dac.h"
 
 
 
@@ -58,7 +59,9 @@ int main (void)
 {
 	setup();
 
-
+	
+	uint8_t loop = 0;
+	uint16_t dac = 0;
 
 	for (int x = 0; x < 6; x += 1)
 	{
@@ -66,7 +69,6 @@ int main (void)
 	}
 
 	uint8_t led = 0;
-
 	while (1)
 	{
 
@@ -94,6 +96,17 @@ int main (void)
 		}
 
 		ioport_toggle_pin_level(LED_4);
+		
+		if (loop == 0)
+		{
+			
+			writeDac(1, 0);
+			writeDac(0, dac);
+			dac += 1;
+			
+		}
+		
+		loop += 1;
 	}
 
 	// Insert application code here, after the board has been initialized.
