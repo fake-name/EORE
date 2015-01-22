@@ -58,10 +58,9 @@ ISR(HardFault_Handler)
 int main (void)
 {
 	setup();
+	writeDac(1, 0);
 
 	
-	uint8_t loop = 0;
-	uint16_t dac = 0;
 
 	for (int x = 0; x < 6; x += 1)
 	{
@@ -96,17 +95,10 @@ int main (void)
 		}
 
 		ioport_toggle_pin_level(LED_4);
+	
+		sweep_chirp(3);
 		
-		if (loop == 0)
-		{
-			
-			writeDac(1, 0);
-			writeDac(0, dac);
-			dac += 1;
-			
-		}
-		
-		loop += 1;
+		//loop += 1;
 	}
 
 	// Insert application code here, after the board has been initialized.

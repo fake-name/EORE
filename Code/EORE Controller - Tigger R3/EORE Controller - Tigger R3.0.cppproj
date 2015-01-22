@@ -585,6 +585,12 @@
     <Compile Include="src\dac\dac.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\i2c\i2c.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\i2c\i2c.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\parse.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1073,6 +1079,7 @@
     <Folder Include="src\config\" />
     <Folder Include="src\board" />
     <Folder Include="src\dac" />
+    <Folder Include="src\i2c" />
     <Folder Include="src\pwm" />
     <Folder Include="src\tmp" />
     <Folder Include="src\spi" />

@@ -16,6 +16,6 @@
 
 void enableDac(void);
 void writeDac(uint8_t channel, uint16_t value);
-
+void sweep_chirp(uint16_t cyclecount);
 
 #endif /* DAC_H_ */
