@@ -87,7 +87,7 @@ inline void parse_misc(volatile command_packet *pkt)
 
 inline void parse_temp(volatile command_packet *pkt)
 {
-	
+
 	switch (pkt->target)
 	{
 		case 0:  // Case 0 is set temperature
@@ -96,13 +96,15 @@ inline void parse_temp(volatile command_packet *pkt)
 			set_temperature(temp);
 			debugUnique("OK: Current setpoint: %f", getTemperatureSetpoint());
 			break;
-			
+
 		case 1:  // Get temperature. value parameter is ignored.
 			debugUnique("OK: Set temperature: %f", getTemperature());
-			
+			break;
+
 		case 2:  // Get setpoint. value parameter is ignored.
 			debugUnique("OK: Set temperature: %f", getTemperatureSetpoint());
-			
+			break;
+
 		default:
 			debugUnique("ERROR: Unknown temp target %i", pkt->target);
 			break;
@@ -194,7 +196,7 @@ inline void parse_sweeper(volatile command_packet *pkt)
 			else
 			{
 				debugUnique("ERROR: %i VCO chirps is not a valid value", pkt->value.value);
-				
+
 			}
 			break;
 		default:
@@ -237,7 +239,7 @@ void process_packet(volatile command_packet *pkt)
 		case WRITE_SWEEPER:
 			parse_sweeper(pkt);
 			break;
-		
+
 		default:
 			debugUnique("ERROR! Unknown command!");
 			break;

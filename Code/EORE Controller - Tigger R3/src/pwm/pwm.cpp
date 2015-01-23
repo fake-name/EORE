@@ -60,7 +60,7 @@ void setupPwm(void)
 	pwm_channel_instance.ul_period = 1000;
 	pwm_channel_instance.ul_duty = 1000;
 	pwm_channel_instance.channel = PWM_CHANNEL_2;
-	
+
 
 
 }
@@ -138,7 +138,7 @@ void PWM_Handler(void)
 
 	double calc = ((int16_t) tempval) >> 4;
 	calc = 0.0628 * calc;
-	
+
 	current_temp = calc;
 
 	double err = pwm_setpoint - calc;
@@ -170,7 +170,7 @@ void PWM_Handler(void)
 	pwm_channel_update_duty(PWM, &pwm_channel_instance, newPwm);
 
 	// DEBUG_PR("TMP reading: %i, %f. PID: %f, %i, err: %f. PWM: %i", tempval, calc, ret, (uint16_t)ret, err, newPwm);
-	DEBUG_PR("%f,%f,%f,%i", calc, ret, err, newPwm);
+	// DEBUG_PR("%f,%f,%f,%i", calc, ret, err, newPwm);
 
 	// Finally, clear the interrupt.
 	pwm_channel_get_interrupt_status(PWM);
