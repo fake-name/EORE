@@ -36,6 +36,8 @@ void enableDac(void)
 	| reserved (1) | mode (1) | command (3) | address (3) |
 
 	*/
+	
+	set_i2c_speed(3.4e6); // 3.4 Mhz I2C Speed mode
 
 	uint8_t command = 0;
 	uint8_t out[2];
@@ -59,6 +61,10 @@ void enableDac(void)
 	out[1] = 3;  // Disable the LDAC inputs
 
 	i2c_write(DAC_I2C_ADDRESS, command, out, sizeof(out));
+	
+	// Clear both DAC channels.
+	writeDac(0, 0);
+	writeDac(1, 0);
 
 
 }
@@ -113,6 +119,8 @@ void writeDac(uint8_t channel, uint16_t value)
 
 
 
+
+	set_i2c_speed(3.4e6); // 3.4 Mhz I2C Speed mode
 	i2c_write(DAC_I2C_ADDRESS, command, out, sizeof(out));
 
 

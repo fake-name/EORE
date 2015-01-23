@@ -28,6 +28,7 @@
 #include "spi/spi.hpp"
 #include "board/board.hpp"
 #include "pwm/pwm.hpp"
+#include "dac/dac.h"
 
 
 // #define DEBUG_PR(x ...)  // Default to NO debug
@@ -65,6 +66,18 @@ inline void parse_misc(volatile command_packet *pkt)
 			}
 			debugUnique("OK: Set noise diode powersupply: %i", pkt->value.value);
 			break;
+		case 1: // Case 1 is control of the VCO sweeper power.
+				// Hardware support for this is currently not present on some boards.
+			if (pkt->value.value == 0)
+			{
+				ioport_set_pin_level(VCO_SWEEPER_PS, 0);
+			}
+			else
+			{
+				ioport_set_pin_level(VCO_SWEEPER_PS, 1);
+			}
+			debugUnique("OK: Set noise VCO sweeper powersupply: %i", pkt->value.value);
+			break;
 		default:
 			debugUnique("ERROR: Unknown misc target val %i", pkt->target);
 			break;
@@ -74,15 +87,22 @@ inline void parse_misc(volatile command_packet *pkt)
 
 inline void parse_temp(volatile command_packet *pkt)
 {
-
+	
 	switch (pkt->target)
 	{
 		case 0:  // Case 0 is set temperature
 			float temp;
 			temp = 0.0625 * pkt->value.value;
 			set_temperature(temp);
-			debugUnique("OK: Set temperature: %f", temp);
+			debugUnique("OK: Current setpoint: %f", getTemperatureSetpoint());
 			break;
+			
+		case 1:  // Get temperature. value parameter is ignored.
+			debugUnique("OK: Set temperature: %f", getTemperature());
+			
+		case 2:  // Get setpoint. value parameter is ignored.
+			debugUnique("OK: Set temperature: %f", getTemperatureSetpoint());
+			
 		default:
 			debugUnique("ERROR: Unknown temp target %i", pkt->target);
 			break;
@@ -159,6 +179,32 @@ inline void parse_vfo(volatile command_packet *pkt)
 }
 
 
+
+inline void parse_sweeper(volatile command_packet *pkt)
+{
+
+	switch (pkt->target)
+	{
+		case 0:  // Case 0 is the main VCO sweeper
+			if (pkt->value.value > 0)
+			{
+				debugUnique("OK: Generating %i VCO chirps", pkt->value.value);
+				sweep_chirp(pkt->value.value);
+			}
+			else
+			{
+				debugUnique("ERROR: %i VCO chirps is not a valid value", pkt->value.value);
+				
+			}
+			break;
+		default:
+			debugUnique("ERROR: Unknown VCO chirp target %i", pkt->target);
+			break;
+
+	}
+}
+
+
 // #########################################################
 // Process a complete and valid packet.
 // #########################################################
@@ -186,8 +232,12 @@ void process_packet(volatile command_packet *pkt)
 
 		case WRITE_FREQ:
 			parse_vfo(pkt);
-		break;
+			break;
 
+		case WRITE_SWEEPER:
+			parse_sweeper(pkt);
+			break;
+		
 		default:
 			debugUnique("ERROR! Unknown command!");
 			break;

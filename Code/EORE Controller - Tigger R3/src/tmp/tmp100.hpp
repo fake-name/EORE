@@ -15,11 +15,7 @@ typedef enum
 #define TMP100_CONFIG_REGISTER        1
 #define TMP100_TEMPERATURE_REGISTER   0
 
-int i2c_write_addr(uint32_t i2c_addr, uint8_t reg_address, uint8_t data);
-// int i2c_write_addr(uint32_t i2c_addr, uint8_t reg_address, uint8_t *data, uint8_t length);
-// int i2c_read_addr(uint32_t i2c_addr, uint8_t reg_address, uint8_t *rdata);
-int i2c_read_addr(uint32_t i2c_addr, uint8_t reg_address, uint8_t *output, uint8_t length);
-
+void setup_all_tmp100(void);
 TMP100_Status initialize_tmp100(uint8_t sensorNo);
 TMP100_Status read_temp(uint8_t sensorNo, uint16_t *tempValue);
 

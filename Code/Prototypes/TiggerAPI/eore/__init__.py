@@ -34,6 +34,11 @@ WRITE_SWITCH       = "\x0C"
 WRITE_FREQ         = "\xC0"
 WRITE_MISC         = "\xDD"
 
+WRITE_TEMP         = "\x22"
+WRITE_SWEEPER      = "\x66"
+
+
+
 
 #: Constant for the 6PST switch - Main input
 MAIN_ANTENNA        = 0x00
@@ -94,10 +99,14 @@ class EoreController(object):
 
 
 
-	# Calculate checksum for string {instr}
-	# this is a very simple checksum, not a CRC or anything.
-	# For the short packet sizes used here, it's sufficent.
 	def __calculateChecksum(self, instr):
+		'''
+		Calculate checksum for string {instr}.
+
+		Checksum is the sum of all bytes in the message, & 0xFF.
+		this is a very simple checksum, not a CRC or anything.
+		For the short packet sizes used here, it's sufficent.
+		'''
 		cksum = 0
 		for char in instr:
 			cksum += ord(char)
@@ -128,8 +137,7 @@ class EoreController(object):
 		self.port.write(pkt)
 		time.sleep(0.05)
 		rx = self._exhaust()
-		if rx:
-			print(rx)
+		return rx
 
 	# Read all data in the rx buffer.
 	def _exhaust(self):
@@ -275,7 +283,18 @@ class EoreController(object):
 		Raises ``ValueError`` for temperatures outside the valid range.
 
 		'''
-		pass
+
+		if temp > 80:
+			raise ValueError("Temperature setpoint too high! Setpoint cannot be above 80°C")
+		if temp < 0:
+			raise ValueError("Temperature setpoint cannot be below 0.")
+
+		# Communications are done in fixed-point values, where
+		# 1 LSB == 0.0625°C
+		setpoint = int(temp / 0.0625)
+
+		self.__sendCommand(WRITE_TEMP, 0, setpoint)
+
 
 	def getTemperature(self):
 		'''
@@ -292,5 +311,54 @@ class EoreController(object):
 		time.
 
 		'''
+
+		# Command data value is ignored, target == 1 means respond with temp
+		self.__sendCommand(WRITE_TEMP, 1, 0)
+
+	def getTemperatureSetpoint(self):
+		'''
+		Read the current temperature setpoint of the harware back from the device.
+
+		Args:
+			None
+		Returns:
+			(float): Current temperature setpoint
+
+		Returns the current hardware temperature, in degrees Celsius.
+
+		Raises ``ValueError`` if the hardware does not respond in a reasonable
+		time.
+
+		'''
+
+
+		# Command data value is ignored, target == 1 means respond with setpoint
+		self.__sendCommand(WRITE_TEMP, 2, 0)
+
+
+
+	def chirpVco(self, chirps):
+		'''
+		Trigger a set of VCO chirps from the sweep oscillator.
+
+		Args:
+			Number of times to do a up-and-down chirp.
+		Returns:
+			Nothing
+
+		A VCO "Chirp" is a single triangle-like VCO sweep, where the VCO output sweeps from
+		~0 Hz to ~500 Mhz, and then back.
+
+		Each chirp takes approximately 120 milliseconds, and there is no way to cancel a set
+		of chirps once it is in progress.
+
+		'''
+
+		if chirps < 0 or chirps > 100:
+			raise ValueError("Invalid number of chirps. Number must be > 0 and < 100.")
+
+		self.__sendCommand(WRITE_TEMP, 0, chirps)
+
+
 
 
