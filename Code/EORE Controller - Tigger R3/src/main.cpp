@@ -47,7 +47,7 @@
 ISR(HardFault_Handler)
 {
 
-	ioport_set_pin_level(LED_4, 1);
+
 	while (1) {
 	}
 }
@@ -58,7 +58,7 @@ int main (void)
 {
 	setup();
 
-	
+	uint16_t cnt = 0;
 
 	for (int x = 0; x < 6; x += 1)
 	{
@@ -68,6 +68,7 @@ int main (void)
 	uint8_t led = 0;
 	while (1)
 	{
+		
 
 		if (rxAvailable())
 		{
@@ -91,13 +92,7 @@ int main (void)
 			}
 
 		}
-
-		// ioport_toggle_pin_level(LED_4);
-	
-		// 
 		
-		//loop += 1;
 	}
 
-	// Insert application code here, after the board has been initialized.
 }

@@ -169,7 +169,7 @@ class EoreController(object):
 		if switchNo != 0:
 			raise ValueError("Only switch 0 is supported at this time.")
 
-		self.__sendCommand(WRITE_SWITCH, switchNo, chan)
+		return self.__sendCommand(WRITE_SWITCH, switchNo, chan)
 
 
 
@@ -197,7 +197,7 @@ class EoreController(object):
 		value = int(value*2+0.5)  # Round to nearest value
 
 		if atten < 7:
-			self.__sendCommand(WRITE_ATTEN, atten, value)
+			return self.__sendCommand(WRITE_ATTEN, atten, value)
 		else:
 			raise ValueError("Valid attenuators are 0-7")
 
@@ -213,9 +213,9 @@ class EoreController(object):
 
 		'''
 		if on:
-			self.__sendCommand(WRITE_MISC, 0, 1)
+			return self.__sendCommand(WRITE_MISC, 0, 1)
 		else:
-			self.__sendCommand(WRITE_MISC, 0, 0)
+			return self.__sendCommand(WRITE_MISC, 0, 0)
 
 
 	def writeOscillator(self, osc, freq):
@@ -243,7 +243,7 @@ class EoreController(object):
 		if (freq < 10e6 or freq > 810e6) and freq != 0:
 			raise ValueError("Frequency %s is not valid. Valid available frequencies are 10 Mhz - 810 Mhz." % freq)
 
-		self.__sendCommand(WRITE_FREQ, 0, freq)
+		return self.__sendCommand(WRITE_FREQ, 0, freq)
 
 
 	# Convenience method
@@ -293,7 +293,7 @@ class EoreController(object):
 		# 1 LSB == 0.0625°C
 		setpoint = int(temp / 0.0625)
 
-		self.__sendCommand(WRITE_TEMP, 0, setpoint)
+		return self.__sendCommand(WRITE_TEMP, 0, setpoint)
 
 
 	def getTemperature(self):
@@ -313,7 +313,7 @@ class EoreController(object):
 		'''
 
 		# Command data value is ignored, target == 1 means respond with temp
-		self.__sendCommand(WRITE_TEMP, 1, 0)
+		return self.__sendCommand(WRITE_TEMP, 1, 0)
 
 	def getTemperatureSetpoint(self):
 		'''
@@ -333,7 +333,7 @@ class EoreController(object):
 
 
 		# Command data value is ignored, target == 1 means respond with setpoint
-		self.__sendCommand(WRITE_TEMP, 2, 0)
+		return self.__sendCommand(WRITE_TEMP, 2, 0)
 
 
 
@@ -357,7 +357,7 @@ class EoreController(object):
 		if chirps < 0 or chirps > 100:
 			raise ValueError("Invalid number of chirps. Number must be > 0 and < 100.")
 
-		self.__sendCommand(WRITE_TEMP, 0, chirps)
+		return self.__sendCommand(WRITE_TEMP, 0, chirps)
 
 
 

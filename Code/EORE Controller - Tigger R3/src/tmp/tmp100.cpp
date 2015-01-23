@@ -15,8 +15,8 @@
 int sensor_to_address(uint8_t sensorNo);
 void set_remote_addr(uint8_t addr);
 
-#define DEBUG_PR(x ...)  // Default to NO debug
-// #define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
+// #define DEBUG_PR(x ...)  // Default to NO debug
+#define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
 
 
 
@@ -60,7 +60,7 @@ int sensor_to_address(uint8_t sensorNo)
 TMP100_Status initialize_tmp100(uint8_t sensorNo)
 {
 
-	// set_i2c_speed(400000); // 400 Khz I2C Speed mode
+	set_i2c_speed(400000); // 400 Khz I2C Speed mode
 	
 	int address = sensor_to_address(sensorNo);
 	if (address < 0)

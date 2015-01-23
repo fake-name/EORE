@@ -61,6 +61,7 @@ int rxAvailable(void)
 
 void DEBUG_UART_ISR_HANDLER(void)
 {
+	ioport_set_pin_level(LED_4, 1);
 	uint32_t dw_status = usart_get_status(DEBUG_UART);
 	if (dw_status & US_CSR_RXRDY) 
 	{
@@ -68,6 +69,7 @@ void DEBUG_UART_ISR_HANDLER(void)
 		usart_read(DEBUG_UART, &received_byte);
 		store_char(received_byte);	
 	}
+	ioport_set_pin_level(LED_4, 0);
 }
 
 
