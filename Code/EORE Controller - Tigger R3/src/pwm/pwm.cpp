@@ -17,6 +17,7 @@
 #define DEBUG_PR(x ...) debugUnique(x)    // UnComment for Debug
 
 volatile double pwm_setpoint;
+volatile double current_temp;
 volatile SPid pwm_state;
 pwm_channel_t pwm_channel_instance;
 
@@ -59,6 +60,7 @@ void setupPwm(void)
 	pwm_channel_instance.ul_period = 1000;
 	pwm_channel_instance.ul_duty = 1000;
 	pwm_channel_instance.channel = PWM_CHANNEL_2;
+	
 
 
 }
@@ -94,9 +96,14 @@ void set_pid_kd(float setpoint)
 
 
 
-float getTemperature(void)
+float getTemperatureSetpoint(void)
 {
 	return (float) pwm_setpoint;
+}
+
+float getTemperature(void)
+{
+	return (float) current_temp;
 }
 
 float get_pid_kp(void)
@@ -126,11 +133,13 @@ void PWM_Handler(void)
 	uint16_t tempval;
 
 	tempval = 0;
-	// read_temp(1, &tempval);
+	read_temp(1, &tempval);
 
 
 	double calc = ((int16_t) tempval) >> 4;
 	calc = 0.0628 * calc;
+	
+	current_temp = calc;
 
 	double err = pwm_setpoint - calc;
 	double ret;

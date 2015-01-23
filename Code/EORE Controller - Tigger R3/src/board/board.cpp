@@ -38,12 +38,13 @@ void setup(void)
 	ioport_set_pin_dir(HEATER_ON, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(OSC_EN, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(NOISE_DIODE_PS, IOPORT_DIR_OUTPUT);
-
+	ioport_set_pin_dir(VCO_SWEEPER_PS, IOPORT_DIR_OUTPUT);
 
 	ioport_set_pin_level(HEATER_ON, 0);
 	ioport_set_pin_level(OSC_EN, 1);
 	ioport_set_pin_level(NOISE_DIODE_PS, 0);
-
+	ioport_set_pin_level(VCO_SWEEPER_PS, 0);
+	
 	ioport_set_pin_dir(LED_1, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(LED_2, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(LED_3, IOPORT_DIR_OUTPUT);
@@ -84,6 +85,8 @@ void setup(void)
 	twi_conf.smbus      = 0;
 
 	twi_master_init(DEVICE_TWI, &twi_conf);
+	// twi_disable_slave_mode(DEVICE_TWI);
+	// twi_enable_master_mode(DEVICE_TWI);
 
 
 	/* =============== SPI Setup =============== */
@@ -136,14 +139,8 @@ void setup(void)
 
 
 
-	for (uint8_t cnt = 0; cnt <= 8; cnt++)
-	{
-		initialize_tmp100(cnt);
-		delay_ms(20);
-	}
 
-
-	/* =============== Debug UART Setup =============== */
+	/* =============== PWM Setup =============== */
 
 
 	pmc_enable_periph_clk(ID_PWM);
@@ -174,12 +171,16 @@ void setup(void)
 
 	pwm_channel_enable(PWM, PWM_CHANNEL_2);
 
+	/* =============== Call various subsystem-specific setups =============== */
+
 	setupPwm();
 
 	setup_vfo();
 	
 	enableDac();
 
+	setup_all_tmp100();
+	
 	// Finally, turn on the interrupts.
 	cpu_irq_enable();
 }

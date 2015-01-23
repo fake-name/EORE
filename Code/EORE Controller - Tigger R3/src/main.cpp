@@ -30,7 +30,6 @@
 #include "tmp/tmp100.hpp"
 #include "spi/spi.hpp"
 #include "pwm/pwm.hpp"
-#include "dac/dac.h"
 
 
 
@@ -58,7 +57,6 @@ ISR(HardFault_Handler)
 int main (void)
 {
 	setup();
-	writeDac(1, 0);
 
 	
 
@@ -94,9 +92,9 @@ int main (void)
 
 		}
 
-		ioport_toggle_pin_level(LED_4);
+		// ioport_toggle_pin_level(LED_4);
 	
-		sweep_chirp(3);
+		// 
 		
 		//loop += 1;
 	}
