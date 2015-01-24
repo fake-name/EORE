@@ -357,7 +357,7 @@ class EoreController(object):
 		if chirps < 0 or chirps > 100:
 			raise ValueError("Invalid number of chirps. Number must be > 0 and < 100.")
 
-		return self.__sendCommand(WRITE_TEMP, 0, chirps)
+		return self.__sendCommand(WRITE_SWEEPER, 0, chirps)
 
 
 

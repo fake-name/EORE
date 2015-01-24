@@ -98,11 +98,11 @@ inline void parse_temp(volatile command_packet *pkt)
 			break;
 
 		case 1:  // Get temperature. value parameter is ignored.
-			debugUnique("OK: Set temperature: %f", getTemperature());
+			debugUnique("OK: Current temperature: %f", getTemperature());
 			break;
 
 		case 2:  // Get setpoint. value parameter is ignored.
-			debugUnique("OK: Set temperature: %f", getTemperatureSetpoint());
+			debugUnique("OK: Setpoint temperature: %f", getTemperatureSetpoint());
 			break;
 
 		default:

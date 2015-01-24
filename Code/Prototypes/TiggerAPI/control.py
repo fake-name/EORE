@@ -55,7 +55,7 @@ def go():
 		# x = 0
 		# port.writeOscillator(0, 0)
 		while 1:
-			print port.getTemperatureSetpoint()
+			print port.chirpVco(5)
 			time.sleep(2)
 			# # x = x % len(vals)
 			# port.writeSwitch(0, eore.NOISE_SOURCE)
