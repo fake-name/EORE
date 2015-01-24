@@ -163,12 +163,12 @@ class EoreController(object):
 
 		'''
 
-		if chan > 0x07 or chan < 0x00 or chan == 0x06:
-			raise ValueError("Invalid switch channel '%s'!" % chan)
+		# if chan > 0x07 or chan < 0x00 or chan == 0x06:
+		# 	raise ValueError("Invalid switch channel '%s'!" % chan)
 
-		if switchNo != 0:
-			raise ValueError("Only switch 0 is supported at this time.")
-
+		# if switchNo < 0 or switchNo > 1:
+		# 	raise ValueError("Only switch 0 is supported at this time.")
+		print(switchNo, chan)
 		return self.__sendCommand(WRITE_SWITCH, switchNo, chan)
 
 

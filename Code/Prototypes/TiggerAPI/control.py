@@ -5,7 +5,7 @@ import eore
 
 def go():
 	print("Starting")
-	port = eore.EoreController("COM41")
+	port = eore.EoreController("COM42")
 	time.sleep(2)
 	port.port.write("\x5Dasdasdasd")
 	print("Port opened, written to")
@@ -27,7 +27,12 @@ def go():
 	port.disableOscillator()
 
 	port.writeOscillator(0, 0)
+	x = 0
 	while 1:
+
+		for s in range(2):
+			for x in range(8):
+				print(port.writeSwitch(s, x))
 
 
 		# try:
@@ -54,43 +59,44 @@ def go():
 
 		# x = 0
 		# port.writeOscillator(0, 0)
-		while 1:
-			print port.chirpVco(5)
-			time.sleep(2)
-			# # x = x % len(vals)
-			# port.writeSwitch(0, eore.NOISE_SOURCE)
-			# # print("Switch set to '%s'" % x)
-			# # # port.writeOscillator(0, 50e6+(10e6*vals[x]))
+		# while 1:
+		# 	# print port.chirpVco(5)
+		# 	# time.sleep(2)
+
+		# 	# # x = x % len(vals)
+		# 	# port.writeSwitch(0, eore.NOISE_SOURCE)
+		# 	# # print("Switch set to '%s'" % x)
+		# 	# # # port.writeOscillator(0, 50e6+(10e6*vals[x]))
 
 
-			# # x += 1
+		# 	# # x += 1
 
-			# port.noiseDiodePowerCtl(1)
-			# print("0 atteenuation, connected to powered on diode")
-			# time.sleep(1)
+		# 	# port.noiseDiodePowerCtl(1)
+		# 	# print("0 atteenuation, connected to powered on diode")
+		# 	# time.sleep(1)
 
 
-			# raw_input(0)
+		# 	# raw_input(0)
 
-			# port.writeAtten(eore.NOISE_DIODE_ATTEN, 30)
-			# print("30 atteenuation, connected to powered on diode")
+		# 	# port.writeAtten(eore.NOISE_DIODE_ATTEN, 30)
+		# 	# print("30 atteenuation, connected to powered on diode")
 
-			# raw_input(0)
+		# 	# raw_input(0)
 
-			# port.noiseDiodePowerCtl(0)
-			# print("30 atteenuation, connected to powered off diode")
-			# time.sleep(1)
+		# 	# port.noiseDiodePowerCtl(0)
+		# 	# print("30 atteenuation, connected to powered off diode")
+		# 	# time.sleep(1)
 
-			# raw_input(0)
+		# 	# raw_input(0)
 
-			# port.writeAtten(eore.NOISE_DIODE_ATTEN, 0)
-			# print("0 atteenuation, connected to powered off diode")
+		# 	# port.writeAtten(eore.NOISE_DIODE_ATTEN, 0)
+		# 	# print("0 atteenuation, connected to powered off diode")
 
-			# raw_input(0)
+		# 	# raw_input(0)
 
-			# port.writeSwitch(0, eore.TERMINATION)
-			# print("Termination")
-			# raw_input(0)
+		# 	# port.writeSwitch(0, eore.TERMINATION)
+		# 	# print("Termination")
+		# 	# raw_input(0)
 
 		# port.writeAtten(0, 0)
 		# time.sleep(1)

@@ -117,12 +117,7 @@ void writeDac(uint8_t channel, uint16_t value)
 	out[0] = value >> 8;
 	out[1] = value & 0xFF;
 
-
-
-
-	set_i2c_speed(3.4e6); // 3.4 Mhz I2C Speed mode
 	i2c_write(DAC_I2C_ADDRESS, command, out, sizeof(out));
-
 
 }
 

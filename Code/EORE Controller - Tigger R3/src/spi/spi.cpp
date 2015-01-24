@@ -70,6 +70,11 @@ Spi_Status writeAttenuator(uint8_t atten, uint8_t val)
 			spinWait(1);
 			ioport_set_pin_level(CS_5, 0);
 			break;
+		default:
+			USARTWriteStrLn("Error: How did this even get reached?");
+			return SET_ERROR;
+			break;
+			
 	}
 	return SET_SUCCESS;
 
@@ -111,6 +116,10 @@ Spi_Status writeSwitch(uint8_t swNo, uint8_t val)
 			srState &= (~SW_2_MASK);
 			srState |= (val & SW_2_MASK);
 
+			break;
+			
+		default:
+			return SET_ERROR;
 			break;
 	}
 	

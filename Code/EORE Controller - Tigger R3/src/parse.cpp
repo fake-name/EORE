@@ -135,7 +135,7 @@ inline void parse_atten(volatile command_packet *pkt)
 
 	if (tmp == SET_SUCCESS)
 	{
-		debugUnique("OK: Atten Set %i -> %i", (uint8_t) pkt->target, pkt->value.value);
+		debugUnique("OK: Atten Set %i -> %f (%i)", (uint8_t) pkt->target, (((float)pkt->value.value) / 0.5), pkt->value.value);
 	}
 	else
 	{

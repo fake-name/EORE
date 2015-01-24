@@ -60,7 +60,7 @@ int i2c_write(uint8_t i2c_address, uint8_t reg_address, uint8_t data)
 	/* Perform a master write access. The PWM irq has to be disabled, since it accesses
 	the TWI interface as well, and if it does so mid-local-read, things will deadlock. */
 	NVIC_DisableIRQ(PWM_IRQn);
-	status = twi_master_read(TWI0, &packet);	
+	status = twi_master_write(TWI0, &packet);	
 	NVIC_EnableIRQ(PWM_IRQn);
 	
 	if (status != TWI_SUCCESS)
@@ -105,7 +105,7 @@ int i2c_write(uint8_t i2c_address, uint8_t reg_address, uint8_t *data, uint8_t l
 	/* Perform a master write access. The PWM irq has to be disabled, since it accesses
 	the TWI interface as well, and if it does so mid-local-read, things will deadlock. */
 	NVIC_DisableIRQ(PWM_IRQn);
-	status = twi_master_read(TWI0, &packet);	
+	status = twi_master_write(TWI0, &packet);	
 	NVIC_EnableIRQ(PWM_IRQn);
 	
 	if (status != TWI_SUCCESS)
