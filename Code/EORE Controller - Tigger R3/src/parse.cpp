@@ -59,24 +59,26 @@ inline void parse_misc(volatile command_packet *pkt)
 			if (pkt->value.value == 0)
 			{
 				ioport_set_pin_level(NOISE_DIODE_PS, 0);
+				debugUnique("OK: Set noise diode powersupply to OFF");
 			}
 			else
 			{
 				ioport_set_pin_level(NOISE_DIODE_PS, 1);
+				debugUnique("OK: Set noise diode powersupply to ON");
 			}
-			debugUnique("OK: Set noise diode powersupply: %i", pkt->value.value);
 			break;
 		case 1: // Case 1 is control of the VCO sweeper power.
 				// Hardware support for this is currently not present on some boards.
 			if (pkt->value.value == 0)
 			{
 				ioport_set_pin_level(VCO_SWEEPER_PS, 0);
+				debugUnique("OK: Set noise VCO sweeper powersupply to OFF");
 			}
 			else
 			{
 				ioport_set_pin_level(VCO_SWEEPER_PS, 1);
+				debugUnique("OK: Set noise VCO sweeper powersupply to ON");
 			}
-			debugUnique("OK: Set noise VCO sweeper powersupply: %i", pkt->value.value);
 			break;
 		default:
 			debugUnique("ERROR: Unknown misc target val %i", pkt->target);
