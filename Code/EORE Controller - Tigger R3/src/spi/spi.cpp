@@ -94,12 +94,16 @@ Spi_Status writeSwitch(uint8_t swNo, uint8_t val)
 
 	// mask out the bits relevant to the switch in question, shift the in val
 	// to the right place, and then or them into place. Then, write that out to the sr.
+	
+	uint8_t tmp_out = 0;
+	
 	switch (swNo)
 	{
 		case 0:
 			if (val > 7 || val == 6)
 				return SET_ERROR;
 
+			
 			val <<= SW_1_bp;
 			val &= SW_1_MASK;
 			srState &= (~SW_1_MASK);
@@ -107,6 +111,7 @@ Spi_Status writeSwitch(uint8_t swNo, uint8_t val)
 
 
 			break;
+			
 		case 1:
 			if (val > 3)
 				return SET_ERROR;

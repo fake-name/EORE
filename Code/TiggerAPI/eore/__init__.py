@@ -43,11 +43,11 @@ WRITE_SWEEPER      = "\x66"
 #: Constant for the 6PST switch - Main input
 MAIN_ANTENNA        = 0x00
 #: Constant for the 6PST switch - SWR tone pass-through input
-SWITCHED_TONE_INPUT = 0x01
+SWITCHED_SWEEPER_INPUT = 0x01
 #: Constant for the 6PST switch - Local EMI antenna input
 EMI_ANTENNA         = 0x02
 #: Constant for the 6PST switch - Auxiliary tone/pilot tone input
-AUX_TONE_INPUT      = 0x03
+PILOT_TONE_INPUT      = 0x03
 #: Constant for the 6PST switch - On-Board 50Ω Termination
 TERMINATION         = 0x04
 #: Constant for the 6PST switch - Noise diode input
