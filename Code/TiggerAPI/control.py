@@ -11,12 +11,12 @@ def go():
 	print("Port opened, written to")
 
 	x = 0
-	port.writeAtten(eore.MAIN_TONE_ATTEN,       10)
-	port.writeAtten(eore.AUX_TONE_ATTEN,        10)
-	port.writeAtten(eore.NOISE_DIODE_ATTEN,     10)
-	port.writeAtten(eore.SWITCH_SWR_TONE_ATTEN, 10)
-	port.writeAtten(eore.SWITCH_TONE_ATTEN,     10)
-	port.writeAtten(eore.MID_AMP_ATTEN,         10)
+	port.writeAtten(eore.MAIN_TONE_ATTEN,       0)
+	port.writeAtten(eore.AUX_TONE_ATTEN,        0)
+	port.writeAtten(eore.NOISE_DIODE_ATTEN,     0)
+	port.writeAtten(eore.SWITCH_SWR_TONE_ATTEN, 0)
+	port.writeAtten(eore.SWITCH_TONE_ATTEN,     0)
+	port.writeAtten(eore.MID_AMP_ATTEN,         0)
 
 
 
@@ -25,11 +25,11 @@ def go():
 	# port.writeAtten(2, 31.5)
 	port.noiseDiodePowerCtl(0)
 	port.disableOscillator()
-
 	port.writeOscillator(0, 0)
 
-	port.noiseDiodePowerCtl(1)
-	port.writeSwitch(0, eore.TERMINATION)
+	port.noiseDiodePowerCtl(0)
+	port.writeSwitch(0, eore.MAIN_ANTENNA)
+	port.writeSwitch(1, 1)
 	# x = 0
 	# while 1:
 
