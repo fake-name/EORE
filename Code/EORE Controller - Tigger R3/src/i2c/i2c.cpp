@@ -216,8 +216,6 @@ int i2c_read(uint8_t i2c_address, uint8_t reg_address, uint8_t *output, uint8_t 
 
 	return length;
 	
-	TWI_HIGH_SPEED_MODE_SPEED
-	TWI_FAST_MODE_SPEED
 }
 /*
  * i2c.cpp

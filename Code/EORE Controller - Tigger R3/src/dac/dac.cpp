@@ -153,11 +153,11 @@ void sweep_chirp(uint16_t cyclecount)
 
 		writeDac(0, dac);
 		if (dir == 0)
-			dac += 40;
+			dac += 1;
 		else
-			dac -= 40;
+			dac -= 1;
 
-		if (dac > 24000)
+		if (dac > 10000)
 		{
 			NVIC_EnableIRQ(PWM_IRQn);
 			dir = 1;

@@ -20,16 +20,35 @@ def go():
 
 
 
+	################################################################################################
+	# center = 101e6
+	# width = 20e6
+
+	# stepBase = 2.465e3
+
+	# start = center - (width/2)
+	# stop  = center + (width/2)
+	# freq = start
+	# while 1:
+	# 	if freq > stop:
+	# 		freq = start
+
+	# 	port.writeOscillator(0, freq)
+	# 	freq += stepBase*10
+
+	while 1:
+		port.chirpVco(5)
 
 
-	# port.writeAtten(2, 31.5)
-	port.noiseDiodePowerCtl(0)
-	port.disableOscillator()
-	port.writeOscillator(0, 0)
 
-	port.noiseDiodePowerCtl(0)
-	port.writeSwitch(0, eore.MAIN_ANTENNA)
-	port.writeSwitch(1, 1)
+	# # port.writeAtten(2, 31.5)
+	# port.noiseDiodePowerCtl(0)
+	# port.disableOscillator()
+	# port.writeOscillator(0, 0)
+
+	# port.noiseDiodePowerCtl(0)
+	# port.writeSwitch(0, eore.MAIN_ANTENNA)
+	# port.writeSwitch(1, 1)
 	# x = 0
 	# while 1:
 
