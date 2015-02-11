@@ -264,39 +264,47 @@ DocumentPath=Project Outputs for EORE Integrated System - R3\Main.GTP
 DItemRevisionGUID=
 
 [GeneratedDocument23]
-DocumentPath=Project Outputs for EORE Integrated System - R3\Main.GTS
+DocumentPath=Project Outputs for EORE Integrated System - R4\Main.GTP
 DItemRevisionGUID=
 
 [GeneratedDocument24]
-DocumentPath=Project Outputs for EORE Integrated System - R4\Main.GTS
+DocumentPath=Project Outputs for EORE Integrated System - R3\Main.GTS
 DItemRevisionGUID=
 
 [GeneratedDocument25]
-DocumentPath=Project Outputs for EORE Integrated System - R3\Main.LDP
+DocumentPath=Project Outputs for EORE Integrated System - R4\Main.GTS
 DItemRevisionGUID=
 
 [GeneratedDocument26]
-DocumentPath=Project Outputs for EORE Integrated System - R4\Main.LDP
+DocumentPath=Project Outputs for EORE Integrated System - R3\Main.LDP
 DItemRevisionGUID=
 
 [GeneratedDocument27]
-DocumentPath=Project Outputs for EORE Integrated System - R3\Main.REP
+DocumentPath=Project Outputs for EORE Integrated System - R4\Main.LDP
 DItemRevisionGUID=
 
 [GeneratedDocument28]
-DocumentPath=Project Outputs for EORE Integrated System - R4\Main.REP
+DocumentPath=Project Outputs for EORE Integrated System - R3\Main.REP
 DItemRevisionGUID=
 
 [GeneratedDocument29]
-DocumentPath=Project Outputs for EORE Integrated System - R3\Main.RUL
+DocumentPath=Project Outputs for EORE Integrated System - R4\Main.REP
 DItemRevisionGUID=
 
 [GeneratedDocument30]
-DocumentPath=Project Outputs for EORE Integrated System - R4\Main.RUL
+DocumentPath=Project Outputs for EORE Integrated System - R3\Main.RUL
 DItemRevisionGUID=
 
 [GeneratedDocument31]
+DocumentPath=Project Outputs for EORE Integrated System - R4\Main.RUL
+DItemRevisionGUID=
+
+[GeneratedDocument32]
 DocumentPath=Project Outputs for EORE Integrated System - R3\Main.TXT
+DItemRevisionGUID=
+
+[GeneratedDocument33]
+DocumentPath=Project Outputs for EORE Integrated System - R4\Main.TXT
 DItemRevisionGUID=
 
 [Configuration1]
