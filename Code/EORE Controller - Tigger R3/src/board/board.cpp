@@ -39,11 +39,13 @@ void setup(void)
 	ioport_set_pin_dir(OSC_EN, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(NOISE_DIODE_PS, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(VCO_SWEEPER_PS, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(VCO_ON, IOPORT_DIR_OUTPUT);
 
 	ioport_set_pin_level(HEATER_ON, 0);
 	ioport_set_pin_level(OSC_EN, 1);
 	ioport_set_pin_level(NOISE_DIODE_PS, 0);
 	ioport_set_pin_level(VCO_SWEEPER_PS, 0);
+	ioport_set_pin_level(VCO_ON, 0);
 	
 	ioport_set_pin_dir(LED_1, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_dir(LED_2, IOPORT_DIR_OUTPUT);

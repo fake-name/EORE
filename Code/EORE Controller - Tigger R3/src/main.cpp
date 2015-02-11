@@ -57,7 +57,8 @@ ISR(HardFault_Handler)
 int main (void)
 {
 	setup();
-
+	
+	
 	uint16_t cnt = 0;
 
 	for (int x = 0; x < 6; x += 1)

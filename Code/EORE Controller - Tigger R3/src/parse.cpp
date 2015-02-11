@@ -192,12 +192,15 @@ inline void parse_sweeper(volatile command_packet *pkt)
 		case 0:  // Case 0 is the main VCO sweeper
 			if (pkt->value.value > 0)
 			{
+				
+				ioport_set_pin_level(VCO_ON, 1);
 				debugUnique("OK: Generating %i VCO chirps", pkt->value.value);
 				sweep_chirp(pkt->value.value);
 			}
 			else
 			{
-				debugUnique("ERROR: %i VCO chirps is not a valid value", pkt->value.value);
+				ioport_set_pin_level(VCO_ON, 0);
+				debugUnique("OK: VCOs disabled");
 
 			}
 			break;

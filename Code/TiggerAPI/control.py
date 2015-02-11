@@ -5,18 +5,17 @@ import eore
 
 def go():
 	print("Starting")
-	port = eore.EoreController("COM42")
-	time.sleep(2)
-	port.port.write("\x5Dasdasdasd")
+	port = eore.EoreController("COM41")
+	time.sleep(1)
 	print("Port opened, written to")
 
 	x = 0
-	port.writeAtten(eore.MAIN_TONE_ATTEN,       0)
-	port.writeAtten(eore.AUX_TONE_ATTEN,        0)
-	port.writeAtten(eore.NOISE_DIODE_ATTEN,     0)
-	port.writeAtten(eore.SWITCH_SWR_TONE_ATTEN, 0)
-	port.writeAtten(eore.SWITCH_TONE_ATTEN,     0)
-	port.writeAtten(eore.MID_AMP_ATTEN,         0)
+	print port.writeAtten(eore.MAIN_TONE_ATTEN,       0)
+	print port.writeAtten(eore.AUX_TONE_ATTEN,        0)
+	print port.writeAtten(eore.NOISE_DIODE_ATTEN,     0)
+	print port.writeAtten(eore.SWITCH_SWR_TONE_ATTEN, 0)
+	print port.writeAtten(eore.SWITCH_TONE_ATTEN,     0)
+	print port.writeAtten(eore.MID_AMP_ATTEN,         0)
 
 
 
@@ -37,8 +36,12 @@ def go():
 	# 	freq += stepBase*10
 
 	while 1:
-		port.chirpVco(5)
-
+		print port.chirpVco(5).strip()
+		print("Sleeping 5 while on")
+		time.sleep(5)
+		print port.chirpVco(0).strip()
+		print("Sleeping 5 while off")
+		time.sleep(5)
 
 
 	# # port.writeAtten(2, 31.5)
