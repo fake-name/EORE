@@ -152,6 +152,7 @@ inline void parse_vfo(volatile command_packet *pkt)
 	{
 		// A value of 0 disables the oscillator.
 		ioport_set_pin_level(OSC_EN, 0);
+		debugUnique("OK: Oscillator disabled.");
 
 	}
 	else if ((pkt->value.value < 10e6) | (pkt->value.value > 810e6))

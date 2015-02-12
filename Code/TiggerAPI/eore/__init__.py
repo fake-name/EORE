@@ -74,13 +74,24 @@ SWITCH_TONE_ATTEN     = 0x04   #
 MID_AMP_ATTEN         = 0x05   #
 
 
+
+
+class TimeoutError(Exception):
+	pass
+
+class CommandError(Exception):
+	pass
+class UnknownResponseError(Exception):
+	pass
+
+
 class EoreController(object):
 	'''
 	Base class for interfacing with the EORE Controller PCB (E.g. the "tigger" board)
 
 
 	'''
-
+	timeout = 1
 
 	_curFreq = 0
 
@@ -136,8 +147,34 @@ class EoreController(object):
 		pkt += self.__calculateChecksum(pkt)
 		self.port.write(pkt)
 		time.sleep(0.05)
-		rx = self._exhaust()
+		rx = self._waitResponse()
+
 		return rx
+
+	# Read all data in the rx buffer.
+	def _waitResponse(self):
+		ret = ""
+
+		start = time.time()
+		while 1:
+
+			while self.port.inWaiting():
+				ret += self.port.read()
+
+			if start + self.timeout < time.time():
+				raise TimeoutError("Timed out waiting for response from the hardware!")
+
+			if "\n" in ret:
+				break
+
+		if 'ERROR' in ret:
+			raise CommandError("Response error from command! Response string: '%s'" % ret.strip())
+		elif 'OK' in ret:
+			return ret.strip()
+
+		raise UnknownResponseError("No known response code in received data: '%s'!" % ret.strip())
+
+
 
 	# Read all data in the rx buffer.
 	def _exhaust(self):
@@ -157,7 +194,11 @@ class EoreController(object):
 			switchNo (int): One of the switch constants defined in the ``eore`` module, for the switch to control.
 			chan (int): One of the channel constants defined in the ``eore`` module for the switch being controlled.
 		Returns:
-			No return value.
+			ASCII text of response from the hardware
+
+		Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+		an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+		with an 'OK', so checking the response string should not *strictly* be necessary.
 
 		Raises ValueError if the switch number or channel is invalid.
 
@@ -168,7 +209,7 @@ class EoreController(object):
 
 		# if switchNo < 0 or switchNo > 1:
 		# 	raise ValueError("Only switch 0 is supported at this time.")
-		print(switchNo, chan)
+
 		return self.__sendCommand(WRITE_SWITCH, switchNo, chan)
 
 
@@ -181,7 +222,11 @@ class EoreController(object):
 			atten (int): One of the constants defined in the ``eore`` module for selecting attenuators.
 			value (float): The desired attenuation value in dB. The valid range is 0-31.5, with a resolution of 0.5 dB.
 		Returns:
-			No return value.
+			ASCII text of response from the hardware
+
+		Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+		an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+		with an 'OK', so checking the response string should not *strictly* be necessary.
 
 		Specified values are rounded to the nearest 0.5 dB interval.
 		Values outside the 0-31.5 dB range will result in a ``ValueError``.
@@ -209,7 +254,11 @@ class EoreController(object):
 		Args:
 			on (boolean): If ``on`` is ``True``, the noise diode will be enabled. If ``on`` is ``False``, it will be turned off.
 		Returns:
-			No return value.
+			ASCII text of response from the hardware
+
+		Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+		an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+		with an 'OK', so checking the response string should not *strictly* be necessary.
 
 		'''
 		if on:
@@ -226,7 +275,11 @@ class EoreController(object):
 			osc (int): Oscillator to control. Should be one of the constants defined in the ``eore`` module.
 			freq (int): must be a value between 10e6 and 810e6 (10-810 MHz), or the special-case value of 0, which shuts the oscillator off entirely.
 		Returns:
-			No return value.
+			ASCII text of response from the hardware
+
+		Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+		an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+		with an 'OK', so checking the response string should not *strictly* be necessary.
 
 		Note that the ``disableOscillator`` call actually just calls this function, with the frequency hard-coded to ``0``.
 
@@ -238,7 +291,7 @@ class EoreController(object):
 		if osc != 0:
 			raise ValueError("Only oscillator number 0 is supported at this time.")
 
-		print("Writing oscillator", freq)
+
 		freq = int(freq)
 		if (freq < 10e6 or freq > 810e6) and freq != 0:
 			raise ValueError("Frequency %s is not valid. Valid available frequencies are 10 Mhz - 810 Mhz." % freq)
@@ -254,7 +307,11 @@ class EoreController(object):
 		Args:
 			osc (int, default=0): Oscillator to turn off.
 		Returns:
-			No return value.
+			ASCII text of response from the hardware
+
+		Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+		an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+		with an 'OK', so checking the response string should not *strictly* be necessary.
 
 		To re-enable the oscillator, you call ``writeOscillator`` with a non-zero frequency.
 		'''
@@ -269,7 +326,11 @@ class EoreController(object):
 		Args:
 			temp (float): Temperature at which to thermally stabilize the RF hardware.
 		Returns:
-			No return value.
+			ASCII text of response from the hardware
+
+		Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+		an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+		with an 'OK', so checking the response string should not *strictly* be necessary.
 
 		Temp is a float, but the temperature sensor and internal calculations are
 		done with fixed-point math with a resolution of 0.0625°C, so adjustments
