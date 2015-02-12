@@ -67,6 +67,11 @@ actual hardware is provided by a set of constant variables defined in the
 <dt id="eore.EoreController">
 <em class="property">class </em><tt class="descclassname">eore.</tt><tt class="descname">EoreController</tt><big>(</big><em>portName</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for interfacing with the EORE Controller PCB (E.g. the &#8220;tigger&#8221; board)</p>
+<dl class="attribute">
+<dt id="eore.EoreController.timeout">
+<tt class="descname">timeout</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.EoreController.timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="eore.EoreController.__init__">
 <tt class="descname">__init__</tt><big>(</big><em>portName</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.__init__" title="Permalink to this definition">¶</a></dt>
@@ -96,11 +101,14 @@ actual hardware is provided by a set of constant variables defined in the
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">No return value.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">ASCII text of response from the hardware</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+with an &#8216;OK&#8217;, so checking the response string should not <em>strictly</em> be necessary.</p>
 <p>Raises ValueError if the switch number or channel is invalid.</p>
 </dd></dl>
 
@@ -118,11 +126,14 @@ actual hardware is provided by a set of constant variables defined in the
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">No return value.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">ASCII text of response from the hardware</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+with an &#8216;OK&#8217;, so checking the response string should not <em>strictly</em> be necessary.</p>
 <p>Specified values are rounded to the nearest 0.5 dB interval.
 Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"><span class="pre">ValueError</span></tt>.</p>
 <p>If the <tt class="docutils literal"><span class="pre">atten</span></tt> value is invalid, it will also raise a <tt class="docutils literal"><span class="pre">ValueError</span></tt></p>
@@ -138,10 +149,13 @@ Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>on</strong> (<em>boolean</em>) &#8211; If <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>, the noise diode will be enabled. If <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">False</span></tt>, it will be turned off.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">No return value.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">ASCII text of response from the hardware</td>
 </tr>
 </tbody>
 </table>
+<p>Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+with an &#8216;OK&#8217;, so checking the response string should not <em>strictly</em> be necessary.</p>
 </dd></dl>
 
 <dl class="method">
@@ -158,11 +172,14 @@ Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">No return value.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">ASCII text of response from the hardware</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p>Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+with an &#8216;OK&#8217;, so checking the response string should not <em>strictly</em> be necessary.</p>
 <p>Note that the <tt class="docutils literal"><span class="pre">disableOscillator</span></tt> call actually just calls this function, with the frequency hard-coded to <tt class="docutils literal"><span class="pre">0</span></tt>.</p>
 <p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> for frequencies outside the valid range, or invalid oscillator values.</p>
 </dd></dl>
@@ -177,10 +194,13 @@ Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>osc</strong> (<em>int, default=0</em>) &#8211; Oscillator to turn off.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">No return value.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">ASCII text of response from the hardware</td>
 </tr>
 </tbody>
 </table>
+<p>Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+with an &#8216;OK&#8217;, so checking the response string should not <em>strictly</em> be necessary.</p>
 <p>To re-enable the oscillator, you call <tt class="docutils literal"><span class="pre">writeOscillator</span></tt> with a non-zero frequency.</p>
 </dd></dl>
 
@@ -194,10 +214,13 @@ Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> (<em>float</em>) &#8211; Temperature at which to thermally stabilize the RF hardware.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">No return value.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">ASCII text of response from the hardware</td>
 </tr>
 </tbody>
 </table>
+<p>Note: The response string is parsed internally. If the hardware responds with an error (or a unknown response),
+an error will be raised. If there is no raised error, it should be safe to assume that the hardware has responded
+with an &#8216;OK&#8217;, so checking the response string should not <em>strictly</em> be necessary.</p>
 <p>Temp is a float, but the temperature sensor and internal calculations are
 done with fixed-point math with a resolution of 0.0625°C, so adjustments
 finer then this resolution will have no effect.</p>
@@ -224,6 +247,41 @@ damage the hardware).</p>
 time.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="eore.EoreController.getTemperatureSetpoint">
+<tt class="descname">getTemperatureSetpoint</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.getTemperatureSetpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.getTemperatureSetpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the current temperature setpoint of the harware back from the device.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(float): Current temperature setpoint</td>
+</tr>
+</tbody>
+</table>
+<p>Returns the current hardware temperature, in degrees Celsius.</p>
+<p>Raises <tt class="docutils literal"><span class="pre">ValueError</span></tt> if the hardware does not respond in a reasonable
+time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.chirpVco">
+<tt class="descname">chirpVco</tt><big>(</big><em>chirps</em><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.chirpVco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.chirpVco" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger a set of VCO chirps from the sweep oscillator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Nothing</td>
+</tr>
+</tbody>
+</table>
+<p>A VCO &#8220;Chirp&#8221; is a single triangle-like VCO sweep, where the VCO output sweeps from
+~0 Hz to ~500 Mhz, and then back.</p>
+<p>Each chirp takes approximately 120 milliseconds, and there is no way to cancel a set
+of chirps once it is in progress.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -247,8 +305,8 @@ actual hardware is provided by a set of constant variables defined in the
 </dd></dl>
 
 <dl class="data">
-<dt id="eore.SWITCHED_TONE_INPUT">
-<tt class="descclassname">eore.</tt><tt class="descname">SWITCHED_TONE_INPUT</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.SWITCHED_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
+<dt id="eore.SWITCHED_SWEEPER_INPUT">
+<tt class="descclassname">eore.</tt><tt class="descname">SWITCHED_SWEEPER_INPUT</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.SWITCHED_SWEEPER_INPUT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for the 6PST switch - SWR tone pass-through input</p>
 </dd></dl>
 
@@ -259,8 +317,8 @@ actual hardware is provided by a set of constant variables defined in the
 </dd></dl>
 
 <dl class="data">
-<dt id="eore.AUX_TONE_INPUT">
-<tt class="descclassname">eore.</tt><tt class="descname">AUX_TONE_INPUT</tt><em class="property"> = 3</em><a class="headerlink" href="#eore.AUX_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
+<dt id="eore.PILOT_TONE_INPUT">
+<tt class="descclassname">eore.</tt><tt class="descname">PILOT_TONE_INPUT</tt><em class="property"> = 3</em><a class="headerlink" href="#eore.PILOT_TONE_INPUT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for the 6PST switch - Auxiliary tone/pilot tone input</p>
 </dd></dl>
 
