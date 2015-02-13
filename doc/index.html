@@ -147,7 +147,7 @@ Values outside the 0-31.5 dB range will result in a <tt class="docutils literal"
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>on</strong> (<em>boolean</em>) &#8211; If <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>, the noise diode will be enabled. If <tt class="docutils literal"><span class="pre">on</span></tt> is <tt class="docutils literal"><span class="pre">False</span></tt>, it will be turned off.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>on</strong> (<em>evaluated as a boolean</em>) &#8211; If <tt class="docutils literal"><span class="pre">on</span></tt> evaluates as <tt class="docutils literal"><span class="pre">True</span></tt>, the noise diode will be enabled. If <tt class="docutils literal"><span class="pre">on</span></tt> evaluates as <tt class="docutils literal"><span class="pre">False</span></tt>, it will be turned off.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">ASCII text of response from the hardware</td>
 </tr>
@@ -272,7 +272,7 @@ time.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Nothing</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ASCII text of response from the hardware</td>
 </tr>
 </tbody>
 </table>
@@ -280,6 +280,22 @@ time.</p>
 ~0 Hz to ~500 Mhz, and then back.</p>
 <p>Each chirp takes approximately 120 milliseconds, and there is no way to cancel a set
 of chirps once it is in progress.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eore.EoreController.powerDownVco">
+<tt class="descname">powerDownVco</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/eore.html#EoreController.powerDownVco"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eore.EoreController.powerDownVco" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn power to the VCO off entirely.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ASCII text of response from the hardware</td>
+</tr>
+</tbody>
+</table>
+<p>If this is called while the VCO output is actively sweeping, it <em>may</em> time-out, as
+the system does not pay attention to the serial interface while it&#8217;s actively sweeping.</p>
 </dd></dl>
 
 </dd></dl>

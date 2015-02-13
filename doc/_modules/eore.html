@@ -86,6 +86,8 @@
 <span class="n">WRITE_SWEEPER</span>      <span class="o">=</span> <span class="s">&quot;</span><span class="se">\x66</span><span class="s">&quot;</span>
 
 
+<span class="c"># This is the main, 6 pole switch for the input selector</span>
+<span class="n">MAIN_SWITCH</span>        <span class="o">=</span> <span class="mi">0</span>
 
 
 <span class="c">#: Constant for the 6PST switch - Main input</span>
@@ -105,6 +107,11 @@
 <span class="n">SWITCH_SHUTDOWN</span>    <span class="o">=</span> <span class="mh">0x07</span>
 <span class="c"># 0x07 puts the switch in &quot;shutdown&quot; state. I /assume/ this means all</span>
 <span class="c"># the switches are open, but it&#39;s not definitively documented in the datasheet.</span>
+
+
+<span class="c"># This is the switch that choses between routing the SWR sweeper through the directional</span>
+<span class="c"># coupler, and directly to the SP6T switch for monitoring uses.</span>
+<span class="n">SWR_SWITCH</span>         <span class="o">=</span> <span class="mi">1</span>
 
 
 <span class="c">#: Variable attenuator selector constants - Main tone attenuator (on tigger board)</span>
@@ -281,9 +288,8 @@
 
 <span class="sd">		If the ``atten`` value is invalid, it will also raise a ``ValueError``</span>
 
-
-
 <span class="sd">		&#39;&#39;&#39;</span>
+
 		<span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mf">31.5</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mo">00</span><span class="p">:</span>
 			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Valid values 31.5 dB to 0 dB. Specified: &#39;</span><span class="si">%s</span><span class="s">&#39;!&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
 
@@ -300,7 +306,7 @@
 <span class="sd">		Send command to enable/disable the noise-diode power supply.</span>
 
 <span class="sd">		Args:</span>
-<span class="sd">			on (boolean): If ``on`` is ``True``, the noise diode will be enabled. If ``on`` is ``False``, it will be turned off.</span>
+<span class="sd">			on (evaluated as a boolean): If ``on`` evaluates as ``True``, the noise diode will be enabled. If ``on`` evaluates as ``False``, it will be turned off.</span>
 <span class="sd">		Returns:</span>
 <span class="sd">			ASCII text of response from the hardware</span>
 
@@ -363,7 +369,7 @@
 
 <span class="sd">		To re-enable the oscillator, you call ``writeOscillator`` with a non-zero frequency.</span>
 <span class="sd">		&#39;&#39;&#39;</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">writeOscillator</span><span class="p">(</span><span class="n">osc</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">writeOscillator</span><span class="p">(</span><span class="n">osc</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
 
 
@@ -453,7 +459,7 @@
 <span class="sd">		Args:</span>
 <span class="sd">			Number of times to do a up-and-down chirp.</span>
 <span class="sd">		Returns:</span>
-<span class="sd">			Nothing</span>
+<span class="sd">			ASCII text of response from the hardware</span>
 
 <span class="sd">		A VCO &quot;Chirp&quot; is a single triangle-like VCO sweep, where the VCO output sweeps from</span>
 <span class="sd">		~0 Hz to ~500 Mhz, and then back.</span>
@@ -467,6 +473,24 @@
 			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid number of chirps. Number must be &gt; 0 and &lt; 100.&quot;</span><span class="p">)</span>
 
 		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sendCommand</span><span class="p">(</span><span class="n">WRITE_SWEEPER</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">chirps</span><span class="p">)</span>
+
+
+
+	<span class="k">def</span> <span class="nf">powerDownVco</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="EoreController.powerDownVco"><a class="viewcode-back" href="../index.html#eore.EoreController.powerDownVco">[docs]</a>		<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">		Turn power to the VCO off entirely.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			Number of times to do a up-and-down chirp.</span>
+<span class="sd">		Returns:</span>
+<span class="sd">			ASCII text of response from the hardware</span>
+
+<span class="sd">		If this is called while the VCO output is actively sweeping, it *may* time-out, as</span>
+<span class="sd">		the system does not pay attention to the serial interface while it&#39;s actively sweeping.</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chirpVco</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div></div></div>
 
           </div>
