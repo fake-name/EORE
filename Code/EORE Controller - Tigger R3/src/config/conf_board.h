@@ -23,7 +23,7 @@
 #define LED_3           IOPORT_CREATE_PIN(PIOA, 11)
 #define LED_4           IOPORT_CREATE_PIN(PIOA, 12)
 
-#define HEATER_ON       IOPORT_CREATE_PIN(PIOA, 5)
+#define HEATER_ON       IOPORT_CREATE_PIN(PIOA, 2)
 
 #define VCO_ON          IOPORT_CREATE_PIN(PIOA, 20)
 //#define HEATER_OLD    IOPORT_CREATE_PIN(PIOA, 5)

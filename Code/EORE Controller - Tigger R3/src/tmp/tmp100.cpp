@@ -116,7 +116,7 @@ TMP100_Status read_temp(uint8_t sensorNo, uint16_t *tempValue)
 	// Reverse byte-ordering because the sensor returns LSBfirst, and we need MSBfirst
 	*tempValue = ((uint16_t)0xFF00 & *tempValue) >> 8 | ((uint16_t)0x00FF & *tempValue) << 8;
 
-	DEBUG_PR("Read bytes: %X, %X ", ((uint8_t*) tempValue)[0], ((uint8_t*) tempValue)[1]);
+	// DEBUG_PR("Read bytes: %X, %X ", ((uint8_t*) tempValue)[0], ((uint8_t*) tempValue)[1]);
 
 
 	if (ret != 0)

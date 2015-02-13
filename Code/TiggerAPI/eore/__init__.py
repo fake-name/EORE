@@ -233,9 +233,8 @@ class EoreController(object):
 
 		If the ``atten`` value is invalid, it will also raise a ``ValueError``
 
-
-
 		'''
+
 		if value > 31.5 or value < 00:
 			raise ValueError("Valid values 31.5 dB to 0 dB. Specified: '%s'!" % value)
 
@@ -315,7 +314,7 @@ class EoreController(object):
 
 		To re-enable the oscillator, you call ``writeOscillator`` with a non-zero frequency.
 		'''
-		self.writeOscillator(osc, 0)
+		return self.writeOscillator(osc, 0)
 
 
 
@@ -405,7 +404,7 @@ class EoreController(object):
 		Args:
 			Number of times to do a up-and-down chirp.
 		Returns:
-			Nothing
+			ASCII text of response from the hardware
 
 		A VCO "Chirp" is a single triangle-like VCO sweep, where the VCO output sweeps from
 		~0 Hz to ~500 Mhz, and then back.
@@ -420,6 +419,23 @@ class EoreController(object):
 
 		return self.__sendCommand(WRITE_SWEEPER, 0, chirps)
 
+
+
+	def powerDownVco(self):
+		'''
+
+		Turn power to the VCO off entirely.
+
+		Args:
+			Number of times to do a up-and-down chirp.
+		Returns:
+			ASCII text of response from the hardware
+
+		If this is called while the VCO output is actively sweeping, it *may* time-out, as
+		the system does not pay attention to the serial interface while it's actively sweeping.
+		'''
+
+		return self.chirpVco(0)
 
 
 
