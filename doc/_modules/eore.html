@@ -86,7 +86,7 @@
 <span class="n">WRITE_SWEEPER</span>      <span class="o">=</span> <span class="s">&quot;</span><span class="se">\x66</span><span class="s">&quot;</span>
 
 
-<span class="c"># This is the main, 6 pole switch for the input selector</span>
+<span class="c">#: This is the main, 6 pole switch for the input selector</span>
 <span class="n">MAIN_SWITCH</span>        <span class="o">=</span> <span class="mi">0</span>
 
 
@@ -104,13 +104,13 @@
 <span class="n">NOISE_SOURCE</span>        <span class="o">=</span> <span class="mh">0x05</span>
 
 <span class="c">#: Constant for the 6PST switch - Switch disabled (in reflective mode?)</span>
+<span class="c">#: 0x07 puts the switch in &quot;shutdown&quot; state. I /assume/ this means all</span>
+<span class="c">#: the switches are open, but it&#39;s not definitively documented in the datasheet.</span>
 <span class="n">SWITCH_SHUTDOWN</span>    <span class="o">=</span> <span class="mh">0x07</span>
-<span class="c"># 0x07 puts the switch in &quot;shutdown&quot; state. I /assume/ this means all</span>
-<span class="c"># the switches are open, but it&#39;s not definitively documented in the datasheet.</span>
 
 
-<span class="c"># This is the switch that choses between routing the SWR sweeper through the directional</span>
-<span class="c"># coupler, and directly to the SP6T switch for monitoring uses.</span>
+<span class="c">#: This is the switch that choses between routing the SWR sweeper through the directional</span>
+<span class="c">#: coupler, and directly to the SP6T switch for monitoring uses.</span>
 <span class="n">SWR_SWITCH</span>         <span class="o">=</span> <span class="mi">1</span>
 
 

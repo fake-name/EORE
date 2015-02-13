@@ -315,6 +315,12 @@ some varieties, and auxiliary systems (such as thermal stabilization).</p>
 actual hardware is provided by a set of constant variables defined in the
 <tt class="docutils literal"><span class="pre">eore</span></tt> module.</p>
 <dl class="data">
+<dt id="eore.MAIN_SWITCH">
+<tt class="descclassname">eore.</tt><tt class="descname">MAIN_SWITCH</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_SWITCH" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main, 6 pole switch for the input selector</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="eore.MAIN_ANTENNA">
 <tt class="descclassname">eore.</tt><tt class="descname">MAIN_ANTENNA</tt><em class="property"> = 0</em><a class="headerlink" href="#eore.MAIN_ANTENNA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constant for the 6PST switch - Main input</p>
@@ -353,7 +359,16 @@ actual hardware is provided by a set of constant variables defined in the
 <dl class="data">
 <dt id="eore.SWITCH_SHUTDOWN">
 <tt class="descclassname">eore.</tt><tt class="descname">SWITCH_SHUTDOWN</tt><em class="property"> = 7</em><a class="headerlink" href="#eore.SWITCH_SHUTDOWN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constant for the 6PST switch - Switch disabled (in reflective mode?)</p>
+<dd><p>Constant for the 6PST switch - Switch disabled (in reflective mode?)
+0x07 puts the switch in &#8220;shutdown&#8221; state. I /assume/ this means all
+the switches are open, but it&#8217;s not definitively documented in the datasheet.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="eore.SWR_SWITCH">
+<tt class="descclassname">eore.</tt><tt class="descname">SWR_SWITCH</tt><em class="property"> = 1</em><a class="headerlink" href="#eore.SWR_SWITCH" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the switch that choses between routing the SWR sweeper through the directional
+coupler, and directly to the SP6T switch for monitoring uses.</p>
 </dd></dl>
 
 <dl class="data">
