@@ -38,6 +38,8 @@ WRITE_TEMP         = "\x22"
 WRITE_SWEEPER      = "\x66"
 
 
+#: This is the main, 6 pole switch for the input selector
+MAIN_SWITCH        = 0
 
 
 #: Constant for the 6PST switch - Main input
@@ -54,9 +56,14 @@ TERMINATION         = 0x04
 NOISE_SOURCE        = 0x05
 
 #: Constant for the 6PST switch - Switch disabled (in reflective mode?)
+#: 0x07 puts the switch in "shutdown" state. I /assume/ this means all
+#: the switches are open, but it's not definitively documented in the datasheet.
 SWITCH_SHUTDOWN    = 0x07
-# 0x07 puts the switch in "shutdown" state. I /assume/ this means all
-# the switches are open, but it's not definitively documented in the datasheet.
+
+
+#: This is the switch that choses between routing the SWR sweeper through the directional
+#: coupler, and directly to the SP6T switch for monitoring uses.
+SWR_SWITCH         = 1
 
 
 #: Variable attenuator selector constants - Main tone attenuator (on tigger board)
@@ -251,7 +258,7 @@ class EoreController(object):
 		Send command to enable/disable the noise-diode power supply.
 
 		Args:
-			on (boolean): If ``on`` is ``True``, the noise diode will be enabled. If ``on`` is ``False``, it will be turned off.
+			on (evaluated as a boolean): If ``on`` evaluates as ``True``, the noise diode will be enabled. If ``on`` evaluates as ``False``, it will be turned off.
 		Returns:
 			ASCII text of response from the hardware
 

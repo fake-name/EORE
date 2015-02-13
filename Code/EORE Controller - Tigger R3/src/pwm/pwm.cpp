@@ -74,6 +74,18 @@ void set_temperature(float setpoint)
 	cpu_irq_enable();
 }
 
+
+float getTemperatureSetpoint(void)
+{
+	return (float) pwm_setpoint;
+}
+
+float getTemperature(void)
+{
+	return (float) current_temp;
+}
+
+
 void set_pid_kp(float setpoint)
 {
 	cpu_irq_disable();
@@ -93,18 +105,6 @@ void set_pid_kd(float setpoint)
 	cpu_irq_enable();
 }
 
-
-
-
-float getTemperatureSetpoint(void)
-{
-	return (float) pwm_setpoint;
-}
-
-float getTemperature(void)
-{
-	return (float) current_temp;
-}
 
 float get_pid_kp(void)
 {
