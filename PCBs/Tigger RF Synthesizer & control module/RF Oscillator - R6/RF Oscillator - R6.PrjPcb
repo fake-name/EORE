@@ -208,7 +208,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document12]
-DocumentPath=__Previews\EORE Connector and Filtering.SchDoc
+DocumentPath=EORE Connector and Filtering.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0

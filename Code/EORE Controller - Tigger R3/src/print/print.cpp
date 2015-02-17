@@ -39,7 +39,7 @@ inline void store_char(unsigned char c)
 int rxRead(void)
 {
 	// if the head isn't ahead of the tail, we don't have any characters
-	if (rx_buffer.head != rx_buffer.tail) 
+	if (rx_buffer.head != rx_buffer.tail)
 	{
 		unsigned char c = rx_buffer.buffer[rx_buffer.tail];
 		rx_buffer.tail = (rx_buffer.tail + 1) % RX_BUFFER_SIZE;
@@ -63,11 +63,11 @@ void DEBUG_UART_ISR_HANDLER(void)
 {
 	ioport_set_pin_level(LED_4, 1);
 	uint32_t dw_status = usart_get_status(DEBUG_UART);
-	if (dw_status & US_CSR_RXRDY) 
+	if (dw_status & US_CSR_RXRDY)
 	{
 		uint32_t received_byte;
 		usart_read(DEBUG_UART, &received_byte);
-		store_char(received_byte);	
+		store_char(received_byte);
 	}
 	ioport_set_pin_level(LED_4, 0);
 }
@@ -102,7 +102,7 @@ void debugUnique(char const *fmt, ... )
 		char buf[128]; // resulting string limited to 128 chars
 		va_list args;
 		va_start (args, fmt );
-		vsnprintf(buf, 128, fmt, args);
+		vsnprintf(buf, sizeof(buf), fmt, args);
 		va_end (args);
 		USARTWriteStrLn(buf);
 }
