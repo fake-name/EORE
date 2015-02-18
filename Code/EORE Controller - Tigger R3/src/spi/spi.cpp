@@ -66,9 +66,9 @@ Spi_Status writeAttenuator(uint8_t atten, uint8_t val)
 			ioport_set_pin_level(CS_4, 0);
 			break;
 		case 5:
-			ioport_set_pin_level(CS_5, 1);
+			ioport_set_pin_level(CS_6, 1);
 			spinWait(1);
-			ioport_set_pin_level(CS_5, 0);
+			ioport_set_pin_level(CS_6, 0);
 			break;
 		default:
 			USARTWriteStrLn("Error: How did this even get reached?");
